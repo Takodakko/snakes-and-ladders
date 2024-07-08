@@ -1,0 +1,10 @@
+.player-piece {
+    height: 2em;
+    width: 2em;
+    overflow: visible;
+}
+
+img {
+    max-height: 160%;
+    max-width: 240%;
+}

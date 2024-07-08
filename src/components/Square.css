@@ -1,0 +1,23 @@
+.square {
+    border: solid;
+    border-color: cornsilk;
+    height: 5em;
+    width: 5em;
+    color: black;
+}
+
+.clipped-square {
+    border: none;
+    border-color: black;
+    height: 5em;
+    width: 5em;
+    color: black;
+    aspect-ratio: 1;  
+    --o: calc(50% * tan(-22.5deg));
+    clip-path: polygon(
+      var(--o) 50%,
+      50% var(--o),
+      calc(100% - var(--o)) 50%,
+      50% calc(100% - var(--o))
+    );
+}
