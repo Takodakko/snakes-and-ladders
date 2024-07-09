@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import Board from './components/Board';
 import LoginView from './components/LoginView';
 import NewGameSetup from './components/NewGameSetup';
@@ -120,11 +120,21 @@ function App() {
     setCurrentStamina(currentStamina + halfOfDie);
     setCurrentScore(currentScore - 2);
     setCanRollDie(true);
-  }
+  };
 
   function addToScore(num: number) {
     setCurrentScore(currentScore + num);
   };
+
+  const pointStaminaTextColor = useCallback((num: number) => {
+    if (num > 10) {
+      return 'black';
+    } else if (num > 3 && num <= 10) {
+      return 'purple';
+    } else {
+      return 'red';
+    }
+  }, [currentScore, currentStamina]);
 
   // --------------------- Data to save state of game -----------------------
   const { squareAttributes, placeTreasuresAndTraps } = boardDeterminers;
@@ -197,8 +207,8 @@ function App() {
           <div className="side-item" style={{color: 'black'}}>
             Ships and Islands<br></br>
             <div>Player: <b>{userName}</b></div>
-            <div>Points: <b>{currentScore}</b></div>
-            <div>Stamina: <b>{currentStamina}</b></div>
+            <div style={{color: pointStaminaTextColor(currentScore)}}>Points: <b>{currentScore}</b></div>
+            <div style={{color: pointStaminaTextColor(currentStamina)}}>Stamina: <b>{currentStamina}</b></div>
             <button onClick={() => changeLogin()}>Log out</button><br></br>
             <button disabled={gameState === 'wonGame'} onClick={() => saveGame()}>Save current game and log out?</button>
           </div>
