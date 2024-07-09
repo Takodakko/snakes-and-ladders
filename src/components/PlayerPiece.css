@@ -7,4 +7,5 @@
 img {
     max-height: 160%;
     max-width: 240%;
+    border-radius: 10%;
 }

@@ -5,7 +5,7 @@ import './LoginView.css';
 function LoginView(props: {displayUserName: Function}) {
     const [name, setName] = useState('');
     const [password, setPassword] = useState('');
-    const [showWarning, setShowWarning] = useState('#63c4e2');
+    const [showWarning, setShowWarning] = useState('black');
 
     function enterSubmit(e: React.KeyboardEvent) {
       if (e.code !== 'Enter') {
@@ -72,7 +72,7 @@ function LoginView(props: {displayUserName: Function}) {
           User Name: 
         </label>
         <input id="name" type="text" required minLength={2} value={name} onKeyDown={enterSubmit} onChange={(c) => {
-          setShowWarning('#63c4e2');
+          setShowWarning('black');
           setName(c.target.value);
           }}>
         </input>
@@ -80,7 +80,7 @@ function LoginView(props: {displayUserName: Function}) {
           Password: 
         </label>
         <input id="password" type="password" required minLength={8} value={password} onKeyDown={enterSubmit} onChange={(c) => {
-          setShowWarning('#63c4e2');
+          setShowWarning('black');
           setPassword(c.target.value);
           }}>
         </input>

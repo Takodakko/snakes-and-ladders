@@ -39,7 +39,7 @@ function Die(props: {dots: number, rollDie: Function, canRollDie: boolean}) {
     const faceDots: JSX.Element[] = [];
     
             for (let i = 0; i < 9; i++) {
-                let backGroundColor = 'white';
+                let backGroundColor = 'inherit';
                 if (blackDotList.includes(i)) {
                     backGroundColor = 'black';
                 }
@@ -60,10 +60,10 @@ function Die(props: {dots: number, rollDie: Function, canRollDie: boolean}) {
 
   return (
     <>
-      <div className={dieFaceClass} onClick={() => canRollDie ? rolling() : {}}>
+      <div className={dieFaceClass} style={{backgroundColor: canRollDie ? 'white' : 'gray'}} onClick={() => canRollDie ? rolling() : {}}>
         {faceDots}
       </div>
-      <div style={{color: canRollDie ? 'black' : '#63c4e2'}}>
+      <div style={{color: '#63c4e2', opacity: canRollDie ? 100 : 0}}>
         <b>Roll the die!</b>
       </div>
     </>
