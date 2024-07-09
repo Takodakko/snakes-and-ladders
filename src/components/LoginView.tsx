@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import './LoginView.css';
 
+/** Creates the view for the log in screen */
 function LoginView(props: {displayUserName: Function}) {
     const [name, setName] = useState('');
     const [password, setPassword] = useState('');

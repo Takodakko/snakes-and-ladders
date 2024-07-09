@@ -1,6 +1,7 @@
 import { useState, useId } from 'react';
 import './NewGameSetup.css';
 
+/** Creates the view for choosing game settings before starting a new game */
 function NewGameSetup(props: {changeNumberOfSquares: Function, changePieceType: Function}) {
     const { changePieceType, changeNumberOfSquares } = props;
     const [number, setNumber] = useState(25);

@@ -1,5 +1,6 @@
 import './PlayerPiece.css';
 
+/** Creates JSX for player's piece */
 function PlayerPiece(props: {pieceType: string, pieceIsHere: boolean}) {
     const {pieceType, pieceIsHere} = props;
   

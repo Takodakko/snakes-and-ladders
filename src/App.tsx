@@ -3,9 +3,11 @@ import Board from './components/Board';
 import LoginView from './components/LoginView';
 import NewGameSetup from './components/NewGameSetup';
 import Die from './components/Die';
+import squareAttributes from './square-attributes';
 import imageList from './imageList';
 import './App.css';
 type gameStateTypes = 'login' | 'newGame' | 'playingGame' | 'wonGame';
+type squareStyleAttributes = Map<number, [number, number, string, string, number]>
 
 function App() {
   
@@ -30,6 +32,12 @@ function App() {
     setUserName(name);
     setGameState('newGame');
   };
+
+  const winMessage = <div className="win-message" style={{display: gameState === 'wonGame' ? 'flex' : 'none'}}>
+  <div><b><i>You win!</i></b></div>
+</div>
+
+  const newGameButtonClass = gameState === 'wonGame' ? 'new-game-pulse' : '';
 
 
   const [numberOfSquares, setNumberOfSquares] = useState(25);
@@ -66,10 +74,12 @@ function App() {
   };
 
 
-  const [squareData, setSquareData] = useState<JSX.Element[]>([]);
-  function getSquareData(data: JSX.Element[]) {
-    setSquareData(data);
-  };
+  // const [squareData, setSquareData] = useState<squareStyleAttributes>(new Map());
+  const chosenSquareData = useMemo<squareStyleAttributes>(() => {
+    const squares = squareAttributes(numberOfSquares);
+    return squares;
+  }, [numberOfSquares]); 
+
 
   const dataToSave = useMemo(() => {
     const data = {
@@ -80,10 +90,10 @@ function App() {
       numberOfSquares,
       gameState,
       userName,
-      squareData,
+      chosenSquareData,
     };
     return data;
-  }, [numberOfSquares, numberOnDie, canRollDie, chosenPieceType, currentPlayerPosition, gameState, userName, squareData]);
+  }, [numberOfSquares, numberOnDie, canRollDie, chosenPieceType, currentPlayerPosition, gameState, userName, chosenSquareData]);
 
   function saveGame() {
     console.log(dataToSave, 'data');
@@ -98,11 +108,12 @@ function App() {
           <LoginView displayUserName={displayUserName}/>
       </div>
       <div className="board-side" style={{backgroundImage: `url(${imageList.waves})`, display: gameState === 'login' ? 'none' : 'block'}}>
+        {winMessage}
         <div style={{display: gameState === 'newGame' ? 'block' : 'none'}}>
           <NewGameSetup changeNumberOfSquares={changeNumberOfSquares} changePieceType={changePieceType}/>
         </div>
         <div className="card" style={{display: gameState === 'playingGame' || gameState === 'wonGame' ? 'block' : 'none'}}>
-          <Board numberOfSquares={numberOfSquares} pieceType={chosenPieceType} playerPosition={currentPlayerPosition} getSquareData={getSquareData}/>
+          <Board numberOfSquares={numberOfSquares} pieceType={chosenPieceType} playerPosition={currentPlayerPosition} chosenSquareData={chosenSquareData}/>
         </div>
       </div>
 
@@ -112,7 +123,7 @@ function App() {
             Ships and Islands<br></br>
             Player: <b>{userName}</b>
             <button onClick={() => changeLogin()}>Log out</button><br></br>
-            <button onClick={() => saveGame()}>Save current game and log out?</button>
+            <button disabled={gameState === 'wonGame'} onClick={() => saveGame()}>Save current game and log out?</button>
           </div>
           <div className="side-item" style={{margin: '2em'}}>
           <div>
@@ -123,7 +134,7 @@ function App() {
           </div>
           </div>
           <div className="side-item" style={{margin: '2em'}}>
-            <button onClick={() => startOver()}>New Game?</button>
+            <button className={newGameButtonClass} onClick={() => startOver()}>New Game?</button>
           </div>
         </div>
       </div>
