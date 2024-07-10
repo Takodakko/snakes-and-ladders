@@ -1,23 +1,27 @@
-#Ships and Islands
+# Ships and Islands
 
-This is a variation on Snakes and Ladders.
+## Set up steps
 
-Start by choosing a username, logging in to a previously created username, or logging in as a guest.
+-This is a variation on Snakes and Ladders.
 
-Choose your player piece, and how many tiles you want on the board.
+-Start by choosing a username, logging in to a previously created username, or logging in as a guest.
 
-Your starting stamina is the number of tiles on the board - 1. Your points start at 0. 
+-Choose your player piece, and how many tiles you want on the board.
 
-However, you can trade stamina for points (1 for 1) during setup to start with more points.
+## Game Rules
 
-Moving forward subtracts stamina based on the numebr of tiles moved. Exploring an island uses 1 stamina.
+-Your starting stamina is the number of tiles on the board - 1. Your points start at 0. 
 
-Resting recovers stamina by half the amount on the die, rounded down.
+-However, you can trade stamina for points (1 for 1) during setup to start with more points.
 
-Each turn you take (either exploring or resting) subtracts 1 point.
+-Moving forward subtracts stamina based on the numebr of tiles moved. Exploring an island uses 1 stamina.
 
-When you explore an island, you may gain points, but you may also lose points. (Sometimes nothing happens at all!)
+-Resting recovers stamina by half the amount on the die, rounded down.
 
-If you run out of stamina before arriving at the final tile, you lose.
+-Each turn you take (either exploring or resting) subtracts 1 point.
 
-If you arrive at the final tile, you get to keep your score.
+-When you explore an island, you may gain points, but you may also lose points. (Sometimes nothing happens at all!)
+
+-If you run out of stamina before arriving at the final tile, you lose.
+
+-If you arrive at the final tile, you get to keep your score.
