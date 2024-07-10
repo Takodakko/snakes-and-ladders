@@ -1,13 +1,30 @@
-import { useState, useId } from 'react';
+import { useState, useId, useMemo } from 'react';
 import './NewGameSetup.css';
 
 /** Creates the view for choosing game settings before starting a new game */
 function NewGameSetup(props: {changeNumberOfSquares: Function, changePieceType: Function}) {
     const { changePieceType, changeNumberOfSquares } = props;
     const [number, setNumber] = useState(25);
+    const [points, setPoints] = useState(0);
+
+    const staminaResult = useMemo(() => {
+      const result = number - points - 1;
+      return result;
+    }, [number, points]);
+
+    const staminaOptions = useMemo(() => {
+      const upperBound = number - 1;
+      const options: JSX.Element[] = [];
+      for (let i = 0; i < upperBound; i++) {
+        options.push(<option key={i} value={i}>{i}</option>)
+      }
+      return options;
+    }, [points, number]);
+
     const [tileNumberWarning, setTileNumberWarning] = useState(false);
     const tilesInputId = useId();
     const pieceTypeId = useId();
+    const stamId = useId();
 
 
     const [currentPieceType, setCurrentPieceType] = useState('sail');
@@ -21,7 +38,7 @@ function NewGameSetup(props: {changeNumberOfSquares: Function, changePieceType: 
         e.preventDefault();
         setTileNumberWarning(false);
         if (number > 1 && number < 51) {
-            changeNumberOfSquares(number);
+            changeNumberOfSquares(number, staminaResult, points);
             changePieceType(currentPieceType);
         } else {
             setTileNumberWarning(true);
@@ -39,12 +56,30 @@ function NewGameSetup(props: {changeNumberOfSquares: Function, changePieceType: 
             <form className="new-game-view" onSubmit={handleSubmit}>
               <label htmlFor={tilesInputId}>
                 How many tiles do you want? (2-50)
-              </label><br></br>
-              <input id={tilesInputId} type="number" name="numberoftilesinput" value={number < 51 && number > 0 ? number : ''} onChange={(n) => setNumber(parseInt(n.target.value))}>
+              </label>
+              <input id={tilesInputId} type="number" name="numberoftilesinput" value={number < 51 && number > 0 ? number : ''} onChange={(n) => {
+                setNumber(parseInt(n.target.value));
+                setPoints(0);
+                }}>
               </input>
+              
+              <label htmlFor={stamId}>
+                More points for less stamina?
+              </label>
+              <div>
+                Starting points:
+              <select id={stamId} value={points} onChange={(p) => setPoints(parseInt(p.target.value))}>
+                {staminaOptions}
+              </select>
+              </div>
+              <div>
+                Starting Stamina: 
+              <input disabled={true} value={staminaResult}></input>
+              </div>
+
               <label htmlFor={pieceTypeId}>
                 What type of ship will you use?
-              </label><br></br>
+              </label>
               <select id={pieceTypeId} value={currentPieceType} onChange={(t) => setCurrentPieceType(t.target.value)}>
                 {selectors}
               </select>

@@ -2,8 +2,8 @@ import './MessageWindow.css';
 import { queryMessageType } from '../App';
 import imageList from '../imageList';
 
-function MessageWindow(props: {content: queryMessageType, messageWindowClose: Function}) {
-  const { content, messageWindowClose } = props;
+function MessageWindow(props: {content: queryMessageType, messageWindowClose: Function, currentStamina: number, pointStaminaTextColor: 'black' | 'purple' | 'red'}) {
+  const { content, messageWindowClose, currentStamina, pointStaminaTextColor } = props;
   
   const eventType = content[0];
   const isQuery = eventType === 'query';
@@ -23,6 +23,7 @@ function MessageWindow(props: {content: queryMessageType, messageWindowClose: Fu
           {points !== 0 ? `Points: ${points}` : ''}
         </div>
         <div style={{height: '1em', width: '1em'}} >{imageTag}</div>
+        <div style={{color: pointStaminaTextColor}}>Current Stamina: {currentStamina}</div>
         <div className="button-container">
         <button onClick={() => messageWindowClose(true)} style={{display: isQuery ? 'block' : 'none'}} autoFocus={true}>
             No, I'd better not...

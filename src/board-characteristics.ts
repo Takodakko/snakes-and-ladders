@@ -24,10 +24,10 @@ function squareAttributes(numberOfSquares: number) {
 };
 
 const treasureTrapDetails: treasureTypeArray = [
-  ['chest', 15, "There was a chest filled with treasure! Finders keepers, right?"],
-  ['pit', -5, "Apparently someone laid out some traps on this island. Some of your crew fell into a pitfall trap. :("],
-  ['snake', -10, "The island has many venomous snakes. You found that out when almost half your crew got bitten by them."],
-  ['fruit', 10, "The island is filled with trees growing a delicious fruit! You load your ship up with it."],
+  ['chest', 20, "There was a chest filled with treasure! Finders keepers, right?"],
+  ['pit', -2, "Apparently someone laid out some traps on this island. Some of your crew fell into a pitfall trap. :("],
+  ['snake', -5, "The island has many venomous snakes. You found that out when almost half your crew got bitten by them."],
+  ['fruit', 15, "The island is filled with trees growing a delicious fruit! You load your ship up with it."],
   ['nothing', 0, "The island was quiet and empty. You explore a little, but there doesn't seem to be anything interesting here."],
   ['nothing', 0, "The island was quiet and empty. You explore a little, but there doesn't seem to be anything interesting here."],
   ['nothing', 0, "The island was quiet and empty. You explore a little, but there doesn't seem to be anything interesting here."],
