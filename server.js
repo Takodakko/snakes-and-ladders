@@ -46,8 +46,10 @@ if (!isProduction) {
 //   }
 // })
 
+
+
 // Serve HTML
-app.use('/', async (req, res) => {
+app.use('*', async (req, res) => {
   try {
     const url = req.originalUrl.replace(base, '')
 
@@ -76,6 +78,16 @@ app.use('/', async (req, res) => {
     res.status(500).end(e.stack)
   }
 })
+
+app.get('/highScores', (req, res) => {
+  try {
+    console.log('getting...');
+    console.log(req.originalUrl, 'req');
+    res.status(200).set({ 'Content-Type': 'application/json' }).json({message: 'hi'});
+  } catch (err) {
+    console.error(err);
+  }
+});
 
 // Start http server
 app.listen(port, () => {
