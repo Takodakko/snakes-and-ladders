@@ -6,13 +6,14 @@ import Die from './components/Die';
 import HighScore from './components/HighScore';
 import InfoDialog from './components/InfoDialog';
 import MessageWindow from './components/MessageWIndow';
-import highScoreCalcs from './high-score-arrangements';
-import { highScoreListType } from './high-score-arrangements';
 import boardDeterminers from './board-characteristics';
 import GameOver from './components/GameOver';
-import { treasureTrapTypes, treasureTrapMap, squareStyleAttributes } from './board-characteristics';
+
 import imageList from './imageList';
 import './App.css';
+
+import { treasureTrapTypes, treasureTrapMap, squareStyleAttributes } from './board-characteristics';
+type highScoreListType = Array<[number, string]>;
 type gameStateTypes = 'login' | 'newGame' | 'playingGame' | 'wonGame';
 type dialogTypes = 'rest' | 'move' | 'points' | 'none';
 type queryMessageType = [treasureTrapTypes | 'query', number, string];
@@ -40,6 +41,8 @@ function App() {
     setShowMessage(false);
     setMessageContent(queryMessage);
     setCurrentStamina(1);
+    setShowHighScores(false);
+    setNewScoreIndex(-1);
   }
 
   function displayUserName(name: string) {
@@ -108,6 +111,7 @@ function App() {
     setCurrentScore(currentScore - 1);
     const newStamina = currentStamina - num;
     setCurrentStamina(currentStamina - num);
+    
     const nextSpace = currentPlayerPosition + num <= numberOfSquares ? currentPlayerPosition + num : numberOfSquares;
     
       setTimeout(() => {
@@ -116,6 +120,10 @@ function App() {
     
     if (nextSpace >= numberOfSquares) {
       setGameState('wonGame');
+      checkList(highScores, [currentScore, userName]);
+      setTimeout(() => {
+        setShowHighScores(true);
+      }, 4000);
     } else {
       if (newStamina <= 0) {
         setGameState('wonGame');
@@ -194,11 +202,48 @@ function App() {
   };
 
   // --------------------- High Score --------------------
-  const { addScore, removeScore } = highScoreCalcs;
-  const fakeList: highScoreListType = [[100, 'Claude'], [90, 'Leonie'], [85, 'Lysithea'], [70, 'Lorenz'], [60, 'Ignatz'], [55, 'Raphael'], [10, 'Hilda'], [5, 'Marianne']];
-  const [highScores, setHighScores] = useState<highScoreListType>(fakeList);
-  addScore(fakeList);
-  removeScore(fakeList);
+  
+  const fakeList: highScoreListType = [[100, 'Claude'], [90, 'Leonie'], [85, 'Lysithea'], [70, 'Lorenz'], [60, 'Ignatz'], [55, 'Raphael'], [10, 'Hilda'], [-10, 'Marianne']];
+  const [highScores, setHighScores] = useState<highScoreListType>(fakeList); // useEffect get list or use fake if failure
+  const [showHighScores, setShowHighScores] = useState(false);
+  const [newScoreIndex, setNewScoreIndex] = useState(-1);
+
+  function checkList(list: highScoreListType, newEntry: [number, string]) {
+    const index = list.findIndex((el) => {
+      if (el[0] > newEntry[0]) {
+        return false;
+      } else {
+        return true;
+      }
+    });
+    if (index !== -1) {
+      setNewScoreIndex(index);
+      addScore(list, newEntry, index);
+    }
+  };
+
+  function addScore(list: highScoreListType, newEntry: [number, string], index: number) {
+    if (index === -1) {
+      return;
+    } else if (index === 0) {
+      list.unshift(newEntry);
+      list.pop();
+      setHighScores(list);
+      return;
+    } else if (index === list.length - 1) {
+      list.pop();
+      list.push(newEntry);
+      setHighScores(list);
+      return;
+    } else {
+      const front = list.slice(0, index);
+      const back = list.slice(index + 1);
+      front.push(newEntry);
+      const newList = [...front, ...back];
+      setHighScores(newList);
+      return;
+    }
+  };
   
   
 
@@ -207,6 +252,9 @@ function App() {
     <div className="message-window-container" style={{display: showMessage ? 'flex' : 'none'}}>
       <MessageWindow content={messageContent} messageWindowClose={messageWindowClose} currentStamina={currentStamina} pointStaminaTextColor={pointStaminaTextColor(currentStamina)}/>
     </div>
+
+    <HighScore showHighScores={showHighScores} highScores={highScores} newScoreIndex={newScoreIndex}/>
+
     <div className="overall-view">
 
       <div style={{display: gameState === 'login' ? 'block' : 'none'}}>
@@ -267,4 +315,4 @@ function App() {
 }
 
 export default App
-export type { queryMessageType, gameStateTypes, dialogTypes }
+export type { queryMessageType, gameStateTypes, dialogTypes, highScoreListType }

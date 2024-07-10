@@ -1,0 +1,36 @@
+.high-score-list {
+    background-color: rgb(242, 184, 163);
+    color: black;
+    border: solid;
+    border-color: solid;
+    border-width: 1px;;
+    z-index: 2000;
+    position: absolute;
+    width: 50em;
+    top: 10%;
+    left: 20%;
+}
+
+.row {
+    border: solid;
+    border-color: black;
+    border-width: 2px 1px;
+}
+
+.new-score-pulse {
+    animation: pulse;
+    animation-iteration-count: infinite;
+    animation-duration: 1s;
+    border: solid;
+    border-color: black;
+    border-width: 2px 1px;
+  }
+  
+  @keyframes pulse {
+    0%, 100% {
+      background-color: #61cd74;
+    }
+    50% {
+      background-color: #a44892;
+    }
+  }
