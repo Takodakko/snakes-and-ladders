@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import Board from './components/Board';
 import LoginView from './components/LoginView';
 import NewGameSetup from './components/NewGameSetup';
@@ -208,6 +208,26 @@ function App() {
   const [showHighScores, setShowHighScores] = useState(false);
   const [newScoreIndex, setNewScoreIndex] = useState(-1);
 
+  useEffect(() => {
+    async function fetchData() {
+    await fetch('http://localhost:3000/highScores', {method: 'GET'})
+    .then((res) => {
+      
+      const data = res.json();
+      console.log(data, 'res');
+      return data;
+    })
+    .then((datar) => {
+      console.log(datar, 'datar');
+      setHighScores(datar);
+    })
+    .catch((e) => {
+      console.log(e, 'error');
+      
+    })}
+    fetchData();
+  }, [gameState]);
+
   function checkList(list: highScoreListType, newEntry: [number, string]) {
     const index = list.findIndex((el) => {
       if (el[0] > newEntry[0]) {
@@ -222,6 +242,15 @@ function App() {
     }
   };
 
+  async function addListToDB(list: highScoreListType) {
+    const body = JSON.stringify(list);
+    const request = new Request('http://localhost:3000/highScores', {method: 'POST', body: body })
+    await fetch(request)
+    .then((res) => res.json())
+    .then((data) => console.log(data, 'saved to DB'))
+    .catch((e) => console.error(e));
+  }
+
   function addScore(list: highScoreListType, newEntry: [number, string], index: number) {
     if (index === -1) {
       return;
@@ -229,11 +258,13 @@ function App() {
       list.unshift(newEntry);
       list.pop();
       setHighScores(list);
+      addListToDB(list);
       return;
     } else if (index === list.length - 1) {
       list.pop();
       list.push(newEntry);
       setHighScores(list);
+      addListToDB(list);
       return;
     } else {
       const front = list.slice(0, index);
@@ -241,6 +272,7 @@ function App() {
       front.push(newEntry);
       const newList = [...front, ...back];
       setHighScores(newList);
+      addListToDB(newList);
       return;
     }
   };
