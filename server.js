@@ -40,6 +40,7 @@ if (!isProduction) {
   app.use(base, sirv('./dist/client', { extensions: [] }))
 }
 
+
 // Serve HTML
 app.use('/main', async (req, res) => {
   try {
@@ -71,7 +72,9 @@ app.use('/main', async (req, res) => {
   }
 })
 
+
 ViteExpress.listen(app, 3000, () => console.log("Server is listening..."));
+
 
 // Start http server
 // app.listen(port, () => {

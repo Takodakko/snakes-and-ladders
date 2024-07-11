@@ -206,6 +206,63 @@ function App() {
   
   const fakeList: highScoreListType = [[100, 'Edelgard'], [90, 'Hubert'], [85, 'Linhardt'], [70, 'Ferdinand'], [60, 'Dorothea'], [55, 'Petra'], [10, 'Bernadetta'], [-10, 'Caspar']];
   const [highScores, setHighScores] = useState<highScoreListType>(fakeList); // useEffect get list or use fake if failure
+  const [whatThis, setWhatThis] = useState<any>('');
+  
+  // useEffect(async () => {
+  //   const response = await fetch('/highScores', {method: 'GET'});
+  //   let total = '';
+  //   for await (const chunk of response.body) {
+  //     total += chunk;
+  //   }
+  //   console.log(total, 'total')
+
+    // .then((res) => {
+    //   const data = res.body;
+    //   console.log(data, 'res');
+    //   return data;
+    // })
+    // .then((datar) => {
+    //   console.log(datar, 'datar');
+    //   setWhatThis(datar);
+    //   return datar;
+    // })
+    // .catch((e) => {
+    //   console.log(e, 'error');
+      
+    // })
+    //return newList;
+  // }, []);
+
+  // fetch('http://localhost:5173/highScores', {method: 'GET'})
+  // .then((res) => res.body)
+  // .then((rb) => {
+  //   const reader = rb?.getReader();
+
+  //   return new ReadableStream({
+  //     start(controller) {
+  //       function push() {
+  //         reader?.read().then(({done, value}) => {
+  //           if (done) {
+  //             console.log(done, 'done');
+  //             controller.close();
+  //             return;
+  //           }
+  //           controller.enqueue(value);
+  //           console.log(done, value, 'done value');
+  //           push();
+  //         });
+  //       }
+  //       push();
+  //     },
+  //   });
+  // })
+  // .then((stream) => {
+  //   new Response(stream, { headers: {'Content-Type': 'text/html' } }).text()
+  // })
+  // .then((result) => {
+  //   console.log(result, 'result')
+  // });
+
   const [showHighScores, setShowHighScores] = useState(false);
   const [newScoreIndex, setNewScoreIndex] = useState(-1);
 
@@ -289,7 +346,7 @@ function App() {
     <div className="message-window-container" style={{display: showMessage ? 'flex' : 'none'}}>
       <MessageWindow content={messageContent} messageWindowClose={messageWindowClose} currentStamina={currentStamina} pointStaminaTextColor={pointStaminaTextColor(currentStamina)}/>
     </div>
-
+    {whatThis}
     <HighScore showHighScores={showHighScores} highScores={highScores} newScoreIndex={newScoreIndex}/>
 
     <div className="overall-view">
