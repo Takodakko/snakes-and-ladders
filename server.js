@@ -1,5 +1,7 @@
 import fs from 'node:fs/promises'
 import express from 'express'
+import ViteExpress from 'vite-express';
+import highScoreRoutes from './routes/highscores.js'
 
 // Constants
 const isProduction = process.env.NODE_ENV === 'production'
@@ -15,7 +17,11 @@ const ssrManifest = isProduction
   : undefined
 
 // Create http server
-const app = express()
+const app = express();
+ViteExpress.config({ignorePaths: '/highScores', mode: isProduction ? 'production' : 'development'});
+
+app.use('/highScores', highScoreRoutes);
+
 
 // Add Vite or respective production middlewares
 let vite
@@ -34,22 +40,9 @@ if (!isProduction) {
   app.use(base, sirv('./dist/client', { extensions: [] }))
 }
 
-// app.post('/login', (req, res) => {
-//   try {
-//     console.log( 'You logged in!');
-//     const json = {"message": "hi"};
-//     res.status(200).set({ 'Content-Type': 'application/json' }).send(json);
-//   } catch(e) {
-//     vite?.ssrFixStacktrace(e)
-//     console.log(e.stack)
-//     res.status(500).end(e.stack)
-//   }
-// })
-
-
 
 // Serve HTML
-app.use('*', async (req, res) => {
+app.use('/main', async (req, res) => {
   try {
     const url = req.originalUrl.replace(base, '')
 
@@ -79,17 +72,11 @@ app.use('*', async (req, res) => {
   }
 })
 
-app.get('/highScores', (req, res) => {
-  try {
-    console.log('getting...');
-    console.log(req.originalUrl, 'req');
-    res.status(200).set({ 'Content-Type': 'application/json' }).json({message: 'hi'});
-  } catch (err) {
-    console.error(err);
-  }
-});
+
+ViteExpress.listen(app, 3000, () => console.log("Server is listening..."));
+
 
 // Start http server
-app.listen(port, () => {
-  console.log(`Server started at http://localhost:${port}`)
-})
+// app.listen(port, () => {
+//   console.log(`Server started at http://localhost:${port}`)
+// })

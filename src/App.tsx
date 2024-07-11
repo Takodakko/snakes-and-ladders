@@ -8,7 +8,6 @@ import InfoDialog from './components/InfoDialog';
 import MessageWindow from './components/MessageWIndow';
 import boardDeterminers from './board-characteristics';
 import GameOver from './components/GameOver';
-
 import imageList from './imageList';
 import './App.css';
 
@@ -17,6 +16,8 @@ type highScoreListType = Array<[number, string]>;
 type gameStateTypes = 'login' | 'newGame' | 'playingGame' | 'wonGame';
 type dialogTypes = 'rest' | 'move' | 'points' | 'none';
 type queryMessageType = [treasureTrapTypes | 'query', number, string];
+
+const BASE = ``;
 
 function App() {
 
@@ -203,7 +204,7 @@ function App() {
 
   // --------------------- High Score --------------------
   
-  const fakeList: highScoreListType = [[100, 'Claude'], [90, 'Leonie'], [85, 'Lysithea'], [70, 'Lorenz'], [60, 'Ignatz'], [55, 'Raphael'], [10, 'Hilda'], [-10, 'Marianne']];
+  const fakeList: highScoreListType = [[100, 'Edelgard'], [90, 'Hubert'], [85, 'Linhardt'], [70, 'Ferdinand'], [60, 'Dorothea'], [55, 'Petra'], [10, 'Bernadetta'], [-10, 'Caspar']];
   const [highScores, setHighScores] = useState<highScoreListType>(fakeList); // useEffect get list or use fake if failure
   const [whatThis, setWhatThis] = useState<any>('');
   
@@ -265,6 +266,26 @@ function App() {
   const [showHighScores, setShowHighScores] = useState(false);
   const [newScoreIndex, setNewScoreIndex] = useState(-1);
 
+  useEffect(() => {
+    async function fetchData() {
+    await fetch(`${BASE}/highScores`, {method: 'GET'})
+    .then((res) => {
+      const data = res.json();
+      return data;
+    })
+    .then((jdata) => {
+      if (!jdata || !Array.isArray(jdata)) {
+        throw new Error('no data gotten');
+      }
+      setHighScores(jdata);
+    })
+    .catch((e) => {
+      console.log(e, 'error');
+      
+    })}
+    fetchData();
+  }, [showHighScores]);
+
   function checkList(list: highScoreListType, newEntry: [number, string]) {
     const index = list.findIndex((el) => {
       if (el[0] > newEntry[0]) {
@@ -279,6 +300,19 @@ function App() {
     }
   };
 
+  async function addListToDB(list: highScoreListType) {
+    const body = JSON.stringify(list);
+    const request = new Request(`${BASE}/highScores`, {method: 'POST', body: body, headers: {'Content-Type': 'application/json'} })
+    await fetch(request)
+    .then((res) => res.json())
+    .then((data) => {
+      if (data === 'porbelm') {
+        throw new Error('problem posting');
+      }
+    })
+    .catch((e) => console.error(e));
+  }
+
   function addScore(list: highScoreListType, newEntry: [number, string], index: number) {
     if (index === -1) {
       return;
@@ -286,11 +320,13 @@ function App() {
       list.unshift(newEntry);
       list.pop();
       setHighScores(list);
+      addListToDB(list);
       return;
     } else if (index === list.length - 1) {
       list.pop();
       list.push(newEntry);
       setHighScores(list);
+      addListToDB(list);
       return;
     } else {
       const front = list.slice(0, index);
@@ -298,6 +334,7 @@ function App() {
       front.push(newEntry);
       const newList = [...front, ...back];
       setHighScores(newList);
+      addListToDB(newList);
       return;
     }
   };
