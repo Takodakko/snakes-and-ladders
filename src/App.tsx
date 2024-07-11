@@ -8,7 +8,6 @@ import InfoDialog from './components/InfoDialog';
 import MessageWindow from './components/MessageWIndow';
 import boardDeterminers from './board-characteristics';
 import GameOver from './components/GameOver';
-
 import imageList from './imageList';
 import './App.css';
 
@@ -17,6 +16,8 @@ type highScoreListType = Array<[number, string]>;
 type gameStateTypes = 'login' | 'newGame' | 'playingGame' | 'wonGame';
 type dialogTypes = 'rest' | 'move' | 'points' | 'none';
 type queryMessageType = [treasureTrapTypes | 'query', number, string];
+
+const BASE = ``;
 
 function App() {
 
@@ -203,30 +204,30 @@ function App() {
 
   // --------------------- High Score --------------------
   
-  const fakeList: highScoreListType = [[100, 'Claude'], [90, 'Leonie'], [85, 'Lysithea'], [70, 'Lorenz'], [60, 'Ignatz'], [55, 'Raphael'], [10, 'Hilda'], [-10, 'Marianne']];
+  const fakeList: highScoreListType = [[100, 'Edelgard'], [90, 'Hubert'], [85, 'Linhardt'], [70, 'Ferdinand'], [60, 'Dorothea'], [55, 'Petra'], [10, 'Bernadetta'], [-10, 'Caspar']];
   const [highScores, setHighScores] = useState<highScoreListType>(fakeList); // useEffect get list or use fake if failure
   const [showHighScores, setShowHighScores] = useState(false);
   const [newScoreIndex, setNewScoreIndex] = useState(-1);
 
   useEffect(() => {
     async function fetchData() {
-    await fetch('http://localhost:3000/highScores', {method: 'GET'})
+    await fetch(`${BASE}/highScores`, {method: 'GET'})
     .then((res) => {
-      
       const data = res.json();
-      console.log(data, 'res');
       return data;
     })
-    .then((datar) => {
-      console.log(datar, 'datar');
-      setHighScores(datar);
+    .then((jdata) => {
+      if (!jdata || !Array.isArray(jdata)) {
+        throw new Error('no data gotten');
+      }
+      setHighScores(jdata);
     })
     .catch((e) => {
       console.log(e, 'error');
       
     })}
     fetchData();
-  }, [gameState]);
+  }, [showHighScores]);
 
   function checkList(list: highScoreListType, newEntry: [number, string]) {
     const index = list.findIndex((el) => {
@@ -244,10 +245,14 @@ function App() {
 
   async function addListToDB(list: highScoreListType) {
     const body = JSON.stringify(list);
-    const request = new Request('http://localhost:3000/highScores', {method: 'POST', body: body })
+    const request = new Request(`${BASE}/highScores`, {method: 'POST', body: body, headers: {'Content-Type': 'application/json'} })
     await fetch(request)
     .then((res) => res.json())
-    .then((data) => console.log(data, 'saved to DB'))
+    .then((data) => {
+      if (data === 'porbelm') {
+        throw new Error('problem posting');
+      }
+    })
     .catch((e) => console.error(e));
   }
 
