@@ -11,17 +11,12 @@ type pieceTypes = 'sail' | 'cargo';
 type queryMessageType = [treasureTrapTypes | 'query', number, string];
 
 interface IgameSaveData {
-    numberOnDie: number;
-    canRollDie: boolean;
     chosenPieceType: string;
     currentPlayerPosition: number;
     numberOfSquares: number;
-    gameState: gameStateTypes;
     userName: string;
     chosenSquareData: squareStyleAttributes;
     currentScore: number;
-    showMessage: boolean;
-    messageContent: queryMessageType;
     currentStamina: number;
     treasuresAndTrapsData: treasureTrapMap;
 };

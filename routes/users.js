@@ -113,7 +113,6 @@ usersRoutes.delete('/deleteData', express.json(), async (req, res, next) => {
 usersRoutes.post('/create', express.json(), async (req, res, next) => {
     try {
         const newUser = req.body;
-        console.log(newUser, 'newUser')
         const canSave =  await saveNewLogin(newUser.name, newUser.password);
         if (canSave) {
             res.status(200).set({ 'Content-Type': 'application/json' }).json('saved');

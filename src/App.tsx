@@ -58,7 +58,7 @@ function App() {
     setCanRollDie(true);
     setCurrentScore(0);
     setShowMessage(false);
-    setMessageContent(queryMessage);
+    setMessageContent([...queryMessage]);
     setCurrentStamina(1);
     setShowHighScores(false);
     setNewScoreIndex(-1);
@@ -102,19 +102,19 @@ function App() {
   const [currentScore, setCurrentScore] = useState(0);
   const [showMessage, setShowMessage] = useState(false);
   const queryMessage: queryMessageType = ['query', 0, "Do you wish to explore for -1 stamina? There are sometimes risks, but sometimes rewards..."];
-  const [messageContent, setMessageContent] = useState<queryMessageType>(queryMessage);
+  const [messageContent, setMessageContent] = useState<queryMessageType>([...queryMessage]);
 
   const rollDie: rollDie = (num: number) => {
     setNumberOnDie(num);
     setCanRollDie(false);
-    setMessageContent(queryMessage);
+    setMessageContent([...queryMessage]);
   };
 
   function exploreIsland() {
     const newStamina = currentStamina - 1;
     setCurrentStamina(currentStamina - 1);
     const currentMessageContent = treasuresAndTrapsData.get(currentPlayerPosition) ?? ['nothing', 0, "The island was quiet and empty. You explore a little, but there doesn't seem to be anything interesting here."];
-    setMessageContent(currentMessageContent);
+    setMessageContent([...currentMessageContent]);
     setShowMessage(true);
     addToScore(currentMessageContent[1]);
     if (newStamina <= 0) {
@@ -127,7 +127,7 @@ function App() {
   const messageWindowClose: messageWindowClose = (onlyClose: boolean) => {
     if (onlyClose) {
       setShowMessage(false);
-      saveGameData();
+      saveGameData(currentScore, currentStamina);
     } else {
       exploreIsland();
     }
@@ -168,8 +168,9 @@ function App() {
   function rest() {
     const halfOfDie = Math.floor(numberOnDie / 2);
     setCurrentStamina(currentStamina + halfOfDie);
-    setCurrentScore(currentScore - 2);
+    setCurrentScore(currentScore - 1);
     setCanRollDie(true);
+    saveGameData(currentScore - 1, currentStamina + halfOfDie);
   };
 
   /** Adds to player's current score */
@@ -214,27 +215,22 @@ function App() {
   const [dataToSave, setDataToSave] = useState<IgameSaveData | null>(null);
 
   /** Save data if user is logged in, unused otherwise */
-  const saveGameData = () => {
+  const saveGameData = (points: number, stamina: number) => {
     if (!isLoggedIn) {
       setDataToSave(null);
     } else {
       console.log('saving...')
       const data: IgameSaveData = {
-        numberOnDie,
-        canRollDie,
         chosenPieceType,
         currentPlayerPosition,
         numberOfSquares,
-        gameState,
         userName,
         chosenSquareData,
-        currentScore,
-        showMessage: false,
-        messageContent,
-        currentStamina,
+        currentScore: points,
+        currentStamina: stamina,
         treasuresAndTrapsData,
       };
-       setDataToSave(data);
+       setDataToSave({...data});
     }
   };
 
@@ -262,22 +258,20 @@ function App() {
 
   /** Restores save data for logged in user who saved game previously */
   const restoreGame: restoreGame = (data: Record<string, any>) => {
-    const { numberOnDie, canRollDie, chosenPieceType, currentPlayerPosition, numberOfSquares, gameState, userName, chosenSquareData, currentScore, showMessage, messageContent, currentStamina, treasuresAndTrapsData } = data;
-    const mapifiedTreasure = ObjectToMap(treasuresAndTrapsData);
-    const mapifiedIslands = ObjectToMap(chosenSquareData);
-    setNumberOnDie(numberOnDie);
-    setCanRollDie(canRollDie);
+    const { chosenPieceType, currentPlayerPosition, numberOfSquares, userName, chosenSquareData, currentScore, currentStamina, treasuresAndTrapsData } = data;
+    setNumberOnDie(1);
+    setCanRollDie(true);
     setChosenPieceType(chosenPieceType);
     setCurrentPlayerPosition(currentPlayerPosition);
     setNumberOfSquares(numberOfSquares);
-    setGameState(gameState);
+    setGameState('playingGame');
     setUserName(userName);
     setCurrentScore(currentScore);
-    setShowMessage(showMessage);
-    setMessageContent(messageContent);
+    setShowMessage(false);
+    setMessageContent([...queryMessage]);
     setCurrentStamina(currentStamina);
-    makeSquares(numberOfSquares, mapifiedIslands);
-    makeTreasure(numberOfSquares, mapifiedTreasure)
+    makeSquares(numberOfSquares, ObjectToMap(chosenSquareData));
+    makeTreasure(numberOfSquares, ObjectToMap(treasuresAndTrapsData))
   };
 
   /** Deletes save game data if user logs out or starts over */
@@ -303,7 +297,7 @@ function App() {
   // --------------------- High Score --------------------
   
   const fakeList = [[100, 'Edelgard'], [90, 'Hubert'], [85, 'Linhardt'], [70, 'Ferdinand'], [60, 'Dorothea'], [55, 'Petra'], [10, 'Bernadetta'], [-10, 'Caspar']];
-  const [highScores, setHighScores] = useState<any[]>(fakeList); // useEffect get list or use fake if failure
+  const [highScores, setHighScores] = useState<any[]>([...fakeList]); // useEffect get list or use fake if failure
   const [showHighScores, setShowHighScores] = useState(false);
   const [newScoreIndex, setNewScoreIndex] = useState(-1);
 
@@ -326,7 +320,7 @@ function App() {
         return null;
       });
       if (newScores !== null) {
-        setHighScores(newScores);
+        setHighScores([...newScores]);
       }
     };
     fetchData();
@@ -372,13 +366,13 @@ function App() {
     } else if (index === 0) {
       list.unshift(newEntry);
       list.pop();
-      setHighScores(list);
+      setHighScores([...list]);
       addListToDB(list);
       return;
     } else if (index === list.length - 1) {
       list.pop();
       list.push(newEntry);
-      setHighScores(list);
+      setHighScores([...list]);
       addListToDB(list);
       return;
     } else {
@@ -386,7 +380,7 @@ function App() {
       const back = list.slice(index + 1);
       front.push(newEntry);
       const newList = [...front, ...back];
-      setHighScores(newList);
+      setHighScores([...newList]);
       addListToDB(newList);
       return;
     }
