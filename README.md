@@ -25,3 +25,7 @@
 -If you run out of stamina before arriving at the final tile, you lose.
 
 -If you arrive at the final tile, you get to keep your score.
+
+# Running locally
+
+-This is a pretty standard React Node application, though it is using Vite for the Dev server. Clone, install dependencies, and use 'npm run dev' to run locally.

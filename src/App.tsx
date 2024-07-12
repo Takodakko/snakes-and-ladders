@@ -64,6 +64,7 @@ function App() {
     setNewScoreIndex(-1);
   }
 
+  /** Sets user name to show on screen, and either starts game from save or moves to set up step if no save */
   function displayUserName(name: string, hasSetup: boolean) {
     setUserName(name);
     setGameState(hasSetup ? 'newGame' : 'playingGame');
@@ -118,14 +119,17 @@ function App() {
     }
   };
 
+  /** Progresses window to next step, either closing it, or changing text if player explores */
   function messageWindowClose(onlyClose: boolean) {
     if (onlyClose) {
       setShowMessage(false);
+      setToggleTurn(!toggleTurn);
     } else {
       exploreIsland();
     }
   };
 
+  /** Moves player piece to next tile */
   function movePiece(num: number) {
     setCurrentScore(currentScore - 1);
     const newStamina = currentStamina - num;
@@ -156,6 +160,7 @@ function App() {
     }
   };
 
+  /** Performs rest action */
   function rest() {
     const halfOfDie = Math.floor(numberOnDie / 2);
     setCurrentStamina(currentStamina + halfOfDie);
@@ -163,10 +168,12 @@ function App() {
     setCanRollDie(true);
   };
 
+  /** Adds to player's current score */
   function addToScore(num: number) {
     setCurrentScore(currentScore + num);
   };
 
+  /** Changes color of points and stamina text when they get low */
   const pointStaminaTextColor = useCallback((num: number) => {
     if (num > 10) {
       return 'black';
@@ -188,18 +195,22 @@ function App() {
   const [chosenSquareData, setChosenSquareData] = useState<squareStyleAttributes>(squareAttributes(2));
   const [treasuresAndTrapsData, setTreasuresAndTrapsData] = useState<treasureTrapMap>(placeTreasuresAndTraps(2));
   
+  /** Either recreates islands from saved data or creates from scratch */
   function makeSquares(num: number, data?: squareStyleAttributes) {
     const squares = data ? data : squareAttributes(num);
     setChosenSquareData(squares);
   };
 
+  /** Either uses saved data or creates treasure and trap data from scratch */
   function makeTreasure(num: number, data?: treasureTrapMap) {
     const treasure = data ? data : placeTreasuresAndTraps(num);
     setTreasuresAndTrapsData(treasure);
   };
 
+  const [toggleTurn, setToggleTurn] = useState(false);
 
-  const dataToSave: IgameSaveData = useMemo(() => {
+  /** Save data if user is logged in, unused otherwise */
+  const dataToSave: IgameSaveData | null = isLoggedIn ? useMemo(() => {
     console.log('saving...')
     const data = {
       numberOnDie,
@@ -217,9 +228,13 @@ function App() {
       treasuresAndTrapsData,
     };
     return data;
-  }, [numberOnDie]);
+  }, [toggleTurn]) : null;
 
+  /** Saves at the end of each turn when window closes, disabled if user is not logged in */
   async function saveGame() {
+    if (!dataToSave) {
+      return;
+    }
       const treasureMap = mapToObject(dataToSave.treasuresAndTrapsData);
       const islandMap = mapToObject(dataToSave.chosenSquareData);
       const body = JSON.stringify({name: userName, game: {...dataToSave, chosenSquareData: islandMap, treasuresAndTrapsData: treasureMap}});
@@ -238,6 +253,7 @@ function App() {
       }
   };
 
+  /** Restores save data for logged in user who saved game previously */
   function restoreGame(data: Record<string, any>) {
     const { numberOnDie, canRollDie, chosenPieceType, currentPlayerPosition, numberOfSquares, gameState, userName, chosenSquareData, currentScore, showMessage, messageContent, currentStamina, treasuresAndTrapsData } = data;
     const mapifiedTreasure = ObjectToMap(treasuresAndTrapsData);
@@ -275,16 +291,17 @@ function App() {
     .then((jdata) => {
       if (!jdata || !Array.isArray(jdata)) {
         throw new Error('no data gotten');
+      } else {
+        setHighScores(jdata);
       }
-      setHighScores(jdata);
     })
     .catch((e) => {
       console.log(e, 'error');
-      
     })}
     fetchData();
   }, [showHighScores]);
 
+  /** Checks if winning user's score should be entered in high score list */
   function checkList(list: highScoreListType, newEntry: [number, string]) {
     if (!isLoggedIn) return;
     const index = list.findIndex((el) => {
@@ -300,6 +317,7 @@ function App() {
     }
   };
 
+  /** Posts updated high score list to DB */
   async function addListToDB(list: highScoreListType) {
     if (!isLoggedIn) return;
     const body = JSON.stringify(list);
@@ -314,6 +332,7 @@ function App() {
     .catch((e) => console.error(e));
   }
 
+  /** Adds user's score to high score list if appropriate */
   function addScore(list: highScoreListType, newEntry: [number, string], index: number) {
     if (!isLoggedIn) return;
     if (index === -1) {

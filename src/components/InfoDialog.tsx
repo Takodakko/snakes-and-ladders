@@ -1,5 +1,6 @@
 import { dialogTypes } from '../App';
 
+/** Informative dialog boxes that explain game concepts */
 function InfoDialog(props: {identifier: dialogTypes, handleHover: Function, hover: dialogTypes}) {
   const { hover, identifier, handleHover } = props;
   const messages: Record<dialogTypes, string> = {

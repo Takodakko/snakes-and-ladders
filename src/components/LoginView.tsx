@@ -19,6 +19,7 @@ function LoginView(props: {displayUserName: Function, userIsRegistered: Function
       setPassword('');
     };
     
+    /** Immediately moves on if guest option chosen. Otherwise queries backend to confirm log in and to check for saved data */
     async function sendNameAndPassword(name: string, pword: string, guest: boolean) {
       if (guest === true) {
         displayUserName(name, true);
@@ -68,6 +69,7 @@ function LoginView(props: {displayUserName: Function, userIsRegistered: Function
       } 
     };
 
+    /** Queries backend and adds new user to DB if actuall new */
     async function addNameAndPassword(name: string, pword: string) {
       if (name === 'Guest') {
         setShowWarning('red');
