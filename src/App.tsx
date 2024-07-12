@@ -11,11 +11,7 @@ import GameOver from './components/GameOver';
 import imageList from './imageList';
 import './App.css';
 import {
-  styleAttributesType,
-  squareStyleArray,
   squareStyleAttributes,
-  treasureTrapTypes,
-  treasureTypeArray,
   treasureTrapMap,
   highScoreListType,
   gameStateTypes,
