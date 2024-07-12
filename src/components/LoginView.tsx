@@ -80,13 +80,11 @@ function LoginView(props: {displayUserName: displayUserName, userIsRegistered: u
       const wasCreated = await fetch(request)
       .then((res) => res.json())
       .then((data) => {
-        console.log(data, 'data');
         if (data === 'saved') {
           return data;
         } else {
           return 'not saved'
         }
-        
       })
       .catch((e) => console.error(e));
 

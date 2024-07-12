@@ -41,7 +41,8 @@ function App() {
     startOver();
     setUserName('');
     setGameState('login');
-    setIsLoggedIn(false)
+    setIsLoggedIn(false);
+    setDataToSave(null);
   }
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
@@ -61,6 +62,7 @@ function App() {
     setCurrentStamina(1);
     setShowHighScores(false);
     setNewScoreIndex(-1);
+    setDataToSave(null);
   }
 
   /** Sets user name to show on screen, and either starts game from save or moves to set up step if no save */
@@ -125,14 +127,14 @@ function App() {
   const messageWindowClose: messageWindowClose = (onlyClose: boolean) => {
     if (onlyClose) {
       setShowMessage(false);
-      setToggleTurn(!toggleTurn);
+      saveGameData();
     } else {
       exploreIsland();
     }
   };
 
   /** Moves player piece to next tile */
-  function movePiece(num: number) {
+  const movePiece = async (num: number) => {
     setCurrentScore(currentScore - 1);
     const newStamina = currentStamina - num;
     setCurrentStamina(currentStamina - num);
@@ -209,28 +211,32 @@ function App() {
     setTreasuresAndTrapsData(treasure);
   };
 
-  const [toggleTurn, setToggleTurn] = useState(false);
+  const [dataToSave, setDataToSave] = useState<IgameSaveData | null>(null);
 
   /** Save data if user is logged in, unused otherwise */
-  const dataToSave: IgameSaveData | null = isLoggedIn ? useMemo(() => {
-    console.log('saving...')
-    const data = {
-      numberOnDie,
-      canRollDie,
-      chosenPieceType,
-      currentPlayerPosition,
-      numberOfSquares,
-      gameState,
-      userName,
-      chosenSquareData,
-      currentScore,
-      showMessage,
-      messageContent,
-      currentStamina,
-      treasuresAndTrapsData,
-    };
-    return data;
-  }, [toggleTurn]) : null;
+  const saveGameData = () => {
+    if (!isLoggedIn) {
+      setDataToSave(null);
+    } else {
+      console.log('saving...')
+      const data: IgameSaveData = {
+        numberOnDie,
+        canRollDie,
+        chosenPieceType,
+        currentPlayerPosition,
+        numberOfSquares,
+        gameState,
+        userName,
+        chosenSquareData,
+        currentScore,
+        showMessage: false,
+        messageContent,
+        currentStamina,
+        treasuresAndTrapsData,
+      };
+       setDataToSave(data);
+    }
+  };
 
   /** Saves at the end of each turn when window closes, disabled if user is not logged in */
   async function saveGame() {
@@ -244,7 +250,6 @@ function App() {
       const success = await fetch(request)
       .then((res) => res.json())
       .then((data) => {
-        console.log(data);
         return data;
       })
       .catch((e) => console.error(e));
@@ -277,30 +282,36 @@ function App() {
 
   // --------------------- High Score --------------------
   
-  const fakeList: highScoreListType = [[100, 'Edelgard'], [90, 'Hubert'], [85, 'Linhardt'], [70, 'Ferdinand'], [60, 'Dorothea'], [55, 'Petra'], [10, 'Bernadetta'], [-10, 'Caspar']];
-  const [highScores, setHighScores] = useState<highScoreListType>(fakeList); // useEffect get list or use fake if failure
+  const fakeList = [[100, 'Edelgard'], [90, 'Hubert'], [85, 'Linhardt'], [70, 'Ferdinand'], [60, 'Dorothea'], [55, 'Petra'], [10, 'Bernadetta'], [-10, 'Caspar']];
+  const [highScores, setHighScores] = useState<any[]>(fakeList); // useEffect get list or use fake if failure
   const [showHighScores, setShowHighScores] = useState(false);
   const [newScoreIndex, setNewScoreIndex] = useState(-1);
 
   useEffect(() => {
     async function fetchData() {
-    await fetch('/api/highScores', {method: 'GET'})
-    .then((res) => {
-      const data = res.json();
-      return data;
-    })
-    .then((jdata) => {
-      if (!jdata || !Array.isArray(jdata)) {
-        throw new Error('no data gotten');
-      } else {
-        setHighScores(jdata);
+      const newScores = await fetch('/api/highScores', {method: 'GET'})
+      .then((res) => {
+        const data = res.json();
+        return data;
+      })
+      .then((jdata) => {
+        if (!jdata || !Array.isArray(jdata)) {
+          return null;
+        } else {
+          return jdata;
+        }
+      })
+      .catch((e) => {
+        console.error(e, 'error');
+        return null;
+      });
+      if (newScores !== null) {
+        setHighScores(newScores);
       }
-    })
-    .catch((e) => {
-      console.log(e, 'error');
-    })}
+    };
     fetchData();
   }, [showHighScores]);
+
 
   /** Checks if winning user's score should be entered in high score list */
   function checkList(list: highScoreListType, newEntry: [number, string]) {

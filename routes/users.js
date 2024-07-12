@@ -83,7 +83,6 @@ usersRoutes.get('/getGame', async (req, res, next) => {
 usersRoutes.post('/saveGame', express.json(), async (req, res, next) => {
     try {
         const body = req.body;
-        console.log(body, 'body')
         const success = await saveGameData(body.name, body.game);
         if (!success) {
             res.status(200).set({ 'Content-Type': 'application/json' }).json('problem saving');
