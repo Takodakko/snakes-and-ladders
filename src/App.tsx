@@ -234,7 +234,7 @@ function App() {
         currentStamina,
         treasuresAndTrapsData,
       };
-       setDataToSave(data);
+       setDataToSave({...data});
     }
   };
 
