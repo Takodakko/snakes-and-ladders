@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import './LoginView.css';
+import { IgameSaveData } from '../App';
 
 /** Creates the view for the log in screen */
-function LoginView(props: {displayUserName: Function}) {
+function LoginView(props: {displayUserName: Function, userIsRegistered: Function, restoreGame: Function}) {
+    const { userIsRegistered, displayUserName, restoreGame } = props;
     const [name, setName] = useState('');
     const [password, setPassword] = useState('');
     const [showWarning, setShowWarning] = useState('black');
@@ -17,9 +19,11 @@ function LoginView(props: {displayUserName: Function}) {
       setPassword('');
     };
     
-    function sendNameAndPassword(name: string, pword: string, guest: boolean) {
+    async function sendNameAndPassword(name: string, pword: string, guest: boolean) {
       if (guest === true) {
-        props.displayUserName(name);
+        displayUserName(name, true);
+        userIsRegistered(false);
+        return;
       } else {
         if (name.length < 2 || pword.length < 8 || name === 'Guest') {
           if (showWarning === 'red') {
@@ -28,38 +32,65 @@ function LoginView(props: {displayUserName: Function}) {
           setShowWarning('red');
           return;
         }
-        console.log(name, pword, 'name and pword')
-        props.displayUserName(name);
+        const body = JSON.stringify({name: name, password: pword});
+        const request = new Request('/api/users/login', {method: 'POST', body: body, headers: {'Content-Type': 'application/json'} })
+        const loggedIn = await fetch(request)
+        .then((res) => res.json())
+        .then((data) => {
+          return data;
+        })
+        .catch((e) => console.error(e));
+
+        if (loggedIn === 'success') {
+          const url = `/api/users/getGame?name=${name}`;
+          const gameRequest = new Request(url, {method: 'GET'});
+          const hasSaveData: IgameSaveData | null = await fetch(gameRequest)
+          .then((res) => res.json())
+          .then((data) => {
+            if (data === 'no data') {
+              return null;
+            } else {
+              return data;
+            }
+          })
+          .catch((e) => console.error(e));
+          if (hasSaveData) {
+            restoreGame(hasSaveData);
+            displayUserName(name, false);
+          } else {
+            displayUserName(name, true);
+          }
+          userIsRegistered(true);
+          
+        } else {
+          window.alert('Check your username and password to login and proceed');
+        }
       } 
     };
-    // //   useEffect(() => {
-    //     const newName = await fetch('/login', {method: 'POST', body: data})
-    //     .then((res) => res.json())
-    //     // .then((json) => setData(json))
-    //     .then((json) => json)
-    //     .catch((e) => console.error(e));
-    // //   }, []);
-    //     // console.log(name, data, 'what is it')
-    //     // fetch('/login', {method: 'POST', body: data})
-    //     // // .then((res) => {
-    //     // //     console.log(res, res.body, 'res')
-    //     // //     res.json()
-    //     // // })
-    //     // // .then((json) => {
-    //     // //     console.log(json, 'is it json?')
-    //     // //     setData(json)
-    //     // // })
-    //     // // .then((res) => {
-    //     // //     console.log(res, res.body, 'res');
-    //     // //     setData(res.status)
-    //     // // })
-    //     // .then((res) => {
-    //     //     console.log(res.body, 'res.body')
-    //     //     return res.body.getReader()
-    //     // })
-    //     // .catch((e) => console.error(e));
-    //   setData(newName);
-    // };
+
+    async function addNameAndPassword(name: string, pword: string) {
+      if (name === 'Guest') {
+        setShowWarning('red');
+        return;
+      }
+      const newUser = JSON.stringify({ name: name, password: pword });
+      const request = new Request('/api/users/login', {method: 'POST', body: newUser, headers: {'Content-Type': 'application/json'} });
+      const wasCreated = await fetch(request)
+      .then((res) => res.json())
+      .then((data) => {
+        console.log(data, 'data');
+        return data;
+      })
+      .catch((e) => console.error(e));
+
+      if (wasCreated === 'saved') {
+        userIsRegistered(true);
+        displayUserName(name, true);
+      } else {
+        window.alert('There was an issue saving your user info');
+      }
+    };
+    
 
     return (
       <>
@@ -84,7 +115,7 @@ function LoginView(props: {displayUserName: Function}) {
           setPassword(c.target.value);
           }}>
         </input>
-        <button onClick={() => sendNameAndPassword(name, password, false)}>
+        <button onClick={() => addNameAndPassword(name, password)}>
           Create New User
         </button>
         <button onClick={() => sendNameAndPassword(name, password, false)}>

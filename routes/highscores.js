@@ -52,7 +52,7 @@ highScoreRoutes.use('/', (err, req, res, next) => {
     if (res.headersSent) {
         return next(err)
       }
-      console.error(err, err.stack, 'wuh woh!')
+      console.error(err, err.stack, 'problem in high score route');
       res.status(500).json('porbelm');
 });
   

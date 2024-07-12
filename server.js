@@ -1,7 +1,8 @@
 import fs from 'node:fs/promises'
 import express from 'express'
 import ViteExpress from 'vite-express';
-import highScoreRoutes from './routes/highscores.js'
+import highScoreRoutes from './routes/highscores.js';
+import usersRoutes from './routes/users.js';
 
 // Constants
 const isProduction = process.env.NODE_ENV === 'production'
@@ -18,9 +19,10 @@ const ssrManifest = isProduction
 
 // Create http server
 const app = express();
-ViteExpress.config({ignorePaths: '/highScores', mode: isProduction ? 'production' : 'development'});
+ViteExpress.config({ignorePaths: (path) => path.includes('/api'), mode: isProduction ? 'production' : 'development'});
 
-app.use('/highScores', highScoreRoutes);
+app.use('/api/highScores', highScoreRoutes);
+app.use('/api/users', usersRoutes);
 
 
 // Add Vite or respective production middlewares
