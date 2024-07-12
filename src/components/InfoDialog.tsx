@@ -1,7 +1,7 @@
-import { dialogTypes } from '../App';
+import { dialogTypes, handleHover } from '../appTypes';
 
 /** Informative dialog boxes that explain game concepts */
-function InfoDialog(props: {identifier: dialogTypes, handleHover: Function, hover: dialogTypes}) {
+function InfoDialog(props: {identifier: dialogTypes, handleHover: handleHover, hover: dialogTypes}) {
   const { hover, identifier, handleHover } = props;
   const messages: Record<dialogTypes, string> = {
     points: 'Collect points from islands. You lose 1 point for each turn. Some islands have traps that make you lose points.',

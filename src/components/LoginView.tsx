@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import './LoginView.css';
-import { IgameSaveData } from '../App';
+import { IgameSaveData, userIsRegistered, displayUserName, restoreGame } from '../appTypes';
 
 /** Creates the view for the log in screen */
-function LoginView(props: {displayUserName: Function, userIsRegistered: Function, restoreGame: Function}) {
+function LoginView(props: {displayUserName: displayUserName, userIsRegistered: userIsRegistered, restoreGame: restoreGame}) {
     const { userIsRegistered, displayUserName, restoreGame } = props;
     const [name, setName] = useState('');
     const [password, setPassword] = useState('');
@@ -76,12 +76,17 @@ function LoginView(props: {displayUserName: Function, userIsRegistered: Function
         return;
       }
       const newUser = JSON.stringify({ name: name, password: pword });
-      const request = new Request('/api/users/login', {method: 'POST', body: newUser, headers: {'Content-Type': 'application/json'} });
+      const request = new Request('/api/users/create', {method: 'POST', body: newUser, headers: {'Content-Type': 'application/json'} });
       const wasCreated = await fetch(request)
       .then((res) => res.json())
       .then((data) => {
         console.log(data, 'data');
-        return data;
+        if (data === 'saved') {
+          return data;
+        } else {
+          return 'not saved'
+        }
+        
       })
       .catch((e) => console.error(e));
 

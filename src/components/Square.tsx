@@ -1,6 +1,6 @@
 import './Square.css';
 import PlayerPiece from './PlayerPiece';
-type styleAttributesType = [number, number, string, string, number]
+import type { styleAttributesType } from '../appTypes';
 
 /** Creates JSX for each tile on board */
 function Square(props: {tileNumber: string, pieceType: string, hasPiece: boolean, styleAttributes: styleAttributesType}) {

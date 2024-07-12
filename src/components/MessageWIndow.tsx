@@ -1,9 +1,9 @@
 import './MessageWindow.css';
-import { queryMessageType } from '../App';
+import { queryMessageType, messageWindowClose } from '../appTypes';
 import imageList from '../imageList';
 
 /** Creates windows that display each turn when player moves */
-function MessageWindow(props: {content: queryMessageType, messageWindowClose: Function, currentStamina: number, pointStaminaTextColor: 'black' | 'purple' | 'red'}) {
+function MessageWindow(props: {content: queryMessageType, messageWindowClose: messageWindowClose, currentStamina: number, pointStaminaTextColor: 'black' | 'purple' | 'red'}) {
   const { content, messageWindowClose, currentStamina, pointStaminaTextColor } = props;
   
   const eventType = content[0];

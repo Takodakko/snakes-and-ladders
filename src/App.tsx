@@ -10,27 +10,30 @@ import boardDeterminers from './board-characteristics';
 import GameOver from './components/GameOver';
 import imageList from './imageList';
 import './App.css';
-
-import { treasureTrapTypes, treasureTrapMap, squareStyleAttributes } from './board-characteristics';
-type highScoreListType = Array<[number, string]>;
-type gameStateTypes = 'login' | 'newGame' | 'playingGame' | 'wonGame';
-type dialogTypes = 'rest' | 'move' | 'points' | 'none';
-type queryMessageType = [treasureTrapTypes | 'query', number, string];
-interface IgameSaveData {
-    numberOnDie: number;
-    canRollDie: boolean;
-    chosenPieceType: string;
-    currentPlayerPosition: number;
-    numberOfSquares: number;
-    gameState: gameStateTypes;
-    userName: string;
-    chosenSquareData: squareStyleAttributes;
-    currentScore: number;
-    showMessage: boolean;
-    messageContent: queryMessageType;
-    currentStamina: number;
-    treasuresAndTrapsData: treasureTrapMap;
-};
+import {
+  styleAttributesType,
+  squareStyleArray,
+  squareStyleAttributes,
+  treasureTrapTypes,
+  treasureTypeArray,
+  treasureTrapMap,
+  highScoreListType,
+  gameStateTypes,
+  dialogTypes,
+  queryMessageType,
+  userIsRegistered,
+  IgameSaveData,
+  pieceTypes,
+  makeTreasure,
+  makeSquares,
+  changePieceType,
+  changeNumberOfSquares,
+  messageWindowClose,
+  restoreGame,
+  displayUserName,
+  handleHover,
+  rollDie,
+} from './appTypes';
 
 function App() {
 
@@ -46,7 +49,7 @@ function App() {
   }
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  function userIsRegistered(yes: boolean) {
+  const userIsRegistered: userIsRegistered = (yes: boolean) => {
     setIsLoggedIn(yes);
   };
 
@@ -65,7 +68,7 @@ function App() {
   }
 
   /** Sets user name to show on screen, and either starts game from save or moves to set up step if no save */
-  function displayUserName(name: string, hasSetup: boolean) {
+  const displayUserName: displayUserName = (name: string, hasSetup: boolean) => {
     setUserName(name);
     setGameState(hasSetup ? 'newGame' : 'playingGame');
   };
@@ -76,7 +79,7 @@ function App() {
   const [numberOfSquares, setNumberOfSquares] = useState(25);
   const [currentStamina, setCurrentStamina] = useState(1);
 
-  function changeNumberOfSquares(num: number, stamina: number, points: number) {
+  const changeNumberOfSquares: changeNumberOfSquares = (num: number, stamina: number, points: number) => {
     setNumberOfSquares(num);
     setCurrentStamina(stamina);
     setCurrentScore(points);
@@ -84,9 +87,12 @@ function App() {
   };
   
 
-  const [chosenPieceType, setChosenPieceType] = useState('sail');
+  const [chosenPieceType, setChosenPieceType] = useState<pieceTypes>('sail');
 
-  function changePieceType(type: string) {
+  const changePieceType: changePieceType = (type: string) => {
+    if (type !== 'sail' && type !== 'cargo') {
+      return;
+    }
     setChosenPieceType(type);
   };
 
@@ -100,7 +106,7 @@ function App() {
   const queryMessage: queryMessageType = ['query', 0, "Do you wish to explore for -1 stamina? There are sometimes risks, but sometimes rewards..."];
   const [messageContent, setMessageContent] = useState<queryMessageType>(queryMessage);
 
-  function rollDie(num: number) {
+  const rollDie: rollDie = (num: number) => {
     setNumberOnDie(num);
     setCanRollDie(false);
     setMessageContent(queryMessage);
@@ -120,7 +126,7 @@ function App() {
   };
 
   /** Progresses window to next step, either closing it, or changing text if player explores */
-  function messageWindowClose(onlyClose: boolean) {
+  const messageWindowClose: messageWindowClose = (onlyClose: boolean) => {
     if (onlyClose) {
       setShowMessage(false);
       setToggleTurn(!toggleTurn);
@@ -186,7 +192,7 @@ function App() {
 
   const [hover, setHover] = useState<dialogTypes>('none');
 
-  function handleHover(dialogType: dialogTypes = 'none') {
+  const handleHover: handleHover = (dialogType: dialogTypes = 'none') => {
     setHover(dialogType);
   }
 
@@ -196,13 +202,13 @@ function App() {
   const [treasuresAndTrapsData, setTreasuresAndTrapsData] = useState<treasureTrapMap>(placeTreasuresAndTraps(2));
   
   /** Either recreates islands from saved data or creates from scratch */
-  function makeSquares(num: number, data?: squareStyleAttributes) {
+  const makeSquares: makeSquares = (num: number, data: squareStyleAttributes | null) => {
     const squares = data ? data : squareAttributes(num);
     setChosenSquareData(squares);
   };
 
   /** Either uses saved data or creates treasure and trap data from scratch */
-  function makeTreasure(num: number, data?: treasureTrapMap) {
+  const makeTreasure: makeTreasure = (num: number, data: treasureTrapMap | null) => {
     const treasure = data ? data : placeTreasuresAndTraps(num);
     setTreasuresAndTrapsData(treasure);
   };
@@ -254,11 +260,10 @@ function App() {
   };
 
   /** Restores save data for logged in user who saved game previously */
-  function restoreGame(data: Record<string, any>) {
+  const restoreGame: restoreGame = (data: Record<string, any>) => {
     const { numberOnDie, canRollDie, chosenPieceType, currentPlayerPosition, numberOfSquares, gameState, userName, chosenSquareData, currentScore, showMessage, messageContent, currentStamina, treasuresAndTrapsData } = data;
     const mapifiedTreasure = ObjectToMap(treasuresAndTrapsData);
     const mapifiedIslands = ObjectToMap(chosenSquareData);
-    console.log(chosenSquareData);
     setNumberOnDie(numberOnDie);
     setCanRollDie(canRollDie);
     setChosenPieceType(chosenPieceType);
@@ -430,4 +435,3 @@ function App() {
 }
 
 export default App
-export type { queryMessageType, gameStateTypes, dialogTypes, highScoreListType, IgameSaveData }
