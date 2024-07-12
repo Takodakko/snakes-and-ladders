@@ -1,8 +1,5 @@
-type squareStyleArray = [number, number, string, string, number];
-type squareStyleAttributes = Map<number, squareStyleArray>
-type treasureTrapTypes = 'chest' | 'pit' | 'snake' | 'fruit' | 'nothing';
-type treasureTypeArray = Array<[treasureTrapTypes, number, string]>;
-type treasureTrapMap = Map<number, [treasureTrapTypes, number, string]>;
+
+import { squareStyleArray, squareStyleAttributes, treasureTrapTypes, treasureTypeArray, treasureTrapMap } from "./appTypes";
 
 /** Calculates appearance determining attributes for randomly generated board */
 function squareAttributes(numberOfSquares: number) {
@@ -74,4 +71,3 @@ const boardDeterminers = {
 };
 
 export default boardDeterminers
-export type { treasureTrapTypes, treasureTrapMap, squareStyleAttributes, squareStyleArray }

@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import Board from './components/Board';
 import LoginView from './components/LoginView';
 import NewGameSetup from './components/NewGameSetup';
@@ -10,27 +10,26 @@ import boardDeterminers from './board-characteristics';
 import GameOver from './components/GameOver';
 import imageList from './imageList';
 import './App.css';
-
-import { treasureTrapTypes, treasureTrapMap, squareStyleAttributes } from './board-characteristics';
-type highScoreListType = Array<[number, string]>;
-type gameStateTypes = 'login' | 'newGame' | 'playingGame' | 'wonGame';
-type dialogTypes = 'rest' | 'move' | 'points' | 'none';
-type queryMessageType = [treasureTrapTypes | 'query', number, string];
-interface IgameSaveData {
-    numberOnDie: number;
-    canRollDie: boolean;
-    chosenPieceType: string;
-    currentPlayerPosition: number;
-    numberOfSquares: number;
-    gameState: gameStateTypes;
-    userName: string;
-    chosenSquareData: squareStyleAttributes;
-    currentScore: number;
-    showMessage: boolean;
-    messageContent: queryMessageType;
-    currentStamina: number;
-    treasuresAndTrapsData: treasureTrapMap;
-};
+import {
+  squareStyleAttributes,
+  treasureTrapMap,
+  highScoreListType,
+  gameStateTypes,
+  dialogTypes,
+  queryMessageType,
+  userIsRegistered,
+  IgameSaveData,
+  pieceTypes,
+  makeTreasure,
+  makeSquares,
+  changePieceType,
+  changeNumberOfSquares,
+  messageWindowClose,
+  restoreGame,
+  displayUserName,
+  handleHover,
+  rollDie,
+} from './appTypes';
 
 function App() {
 
@@ -42,11 +41,12 @@ function App() {
     startOver();
     setUserName('');
     setGameState('login');
-    setIsLoggedIn(false)
+    setIsLoggedIn(false);
+    setDataToSave(null);
   }
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  function userIsRegistered(yes: boolean) {
+  const userIsRegistered: userIsRegistered = (yes: boolean) => {
     setIsLoggedIn(yes);
   };
 
@@ -62,10 +62,11 @@ function App() {
     setCurrentStamina(1);
     setShowHighScores(false);
     setNewScoreIndex(-1);
+    setDataToSave(null);
   }
 
   /** Sets user name to show on screen, and either starts game from save or moves to set up step if no save */
-  function displayUserName(name: string, hasSetup: boolean) {
+  const displayUserName: displayUserName = (name: string, hasSetup: boolean) => {
     setUserName(name);
     setGameState(hasSetup ? 'newGame' : 'playingGame');
   };
@@ -76,7 +77,7 @@ function App() {
   const [numberOfSquares, setNumberOfSquares] = useState(25);
   const [currentStamina, setCurrentStamina] = useState(1);
 
-  function changeNumberOfSquares(num: number, stamina: number, points: number) {
+  const changeNumberOfSquares: changeNumberOfSquares = (num: number, stamina: number, points: number) => {
     setNumberOfSquares(num);
     setCurrentStamina(stamina);
     setCurrentScore(points);
@@ -84,9 +85,12 @@ function App() {
   };
   
 
-  const [chosenPieceType, setChosenPieceType] = useState('sail');
+  const [chosenPieceType, setChosenPieceType] = useState<pieceTypes>('sail');
 
-  function changePieceType(type: string) {
+  const changePieceType: changePieceType = (type: string) => {
+    if (type !== 'sail' && type !== 'cargo') {
+      return;
+    }
     setChosenPieceType(type);
   };
 
@@ -100,7 +104,7 @@ function App() {
   const queryMessage: queryMessageType = ['query', 0, "Do you wish to explore for -1 stamina? There are sometimes risks, but sometimes rewards..."];
   const [messageContent, setMessageContent] = useState<queryMessageType>(queryMessage);
 
-  function rollDie(num: number) {
+  const rollDie: rollDie = (num: number) => {
     setNumberOnDie(num);
     setCanRollDie(false);
     setMessageContent(queryMessage);
@@ -120,17 +124,17 @@ function App() {
   };
 
   /** Progresses window to next step, either closing it, or changing text if player explores */
-  function messageWindowClose(onlyClose: boolean) {
+  const messageWindowClose: messageWindowClose = (onlyClose: boolean) => {
     if (onlyClose) {
       setShowMessage(false);
-      setToggleTurn(!toggleTurn);
+      saveGameData();
     } else {
       exploreIsland();
     }
   };
 
   /** Moves player piece to next tile */
-  function movePiece(num: number) {
+  const movePiece = async (num: number) => {
     setCurrentScore(currentScore - 1);
     const newStamina = currentStamina - num;
     setCurrentStamina(currentStamina - num);
@@ -186,7 +190,7 @@ function App() {
 
   const [hover, setHover] = useState<dialogTypes>('none');
 
-  function handleHover(dialogType: dialogTypes = 'none') {
+  const handleHover: handleHover = (dialogType: dialogTypes = 'none') => {
     setHover(dialogType);
   }
 
@@ -196,42 +200,46 @@ function App() {
   const [treasuresAndTrapsData, setTreasuresAndTrapsData] = useState<treasureTrapMap>(placeTreasuresAndTraps(2));
   
   /** Either recreates islands from saved data or creates from scratch */
-  function makeSquares(num: number, data?: squareStyleAttributes) {
+  const makeSquares: makeSquares = (num: number, data: squareStyleAttributes | null) => {
     const squares = data ? data : squareAttributes(num);
     setChosenSquareData(squares);
   };
 
   /** Either uses saved data or creates treasure and trap data from scratch */
-  function makeTreasure(num: number, data?: treasureTrapMap) {
+  const makeTreasure: makeTreasure = (num: number, data: treasureTrapMap | null) => {
     const treasure = data ? data : placeTreasuresAndTraps(num);
     setTreasuresAndTrapsData(treasure);
   };
 
-  const [toggleTurn, setToggleTurn] = useState(false);
+  const [dataToSave, setDataToSave] = useState<IgameSaveData | null>(null);
 
   /** Save data if user is logged in, unused otherwise */
-  const dataToSave: IgameSaveData | null = isLoggedIn ? useMemo(() => {
-    console.log('saving...')
-    const data = {
-      numberOnDie,
-      canRollDie,
-      chosenPieceType,
-      currentPlayerPosition,
-      numberOfSquares,
-      gameState,
-      userName,
-      chosenSquareData,
-      currentScore,
-      showMessage,
-      messageContent,
-      currentStamina,
-      treasuresAndTrapsData,
-    };
-    return data;
-  }, [toggleTurn]) : null;
+  const saveGameData = () => {
+    if (!isLoggedIn) {
+      setDataToSave(null);
+    } else {
+      console.log('saving...')
+      const data: IgameSaveData = {
+        numberOnDie,
+        canRollDie,
+        chosenPieceType,
+        currentPlayerPosition,
+        numberOfSquares,
+        gameState,
+        userName,
+        chosenSquareData,
+        currentScore,
+        showMessage: false,
+        messageContent,
+        currentStamina,
+        treasuresAndTrapsData,
+      };
+       setDataToSave(data);
+    }
+  };
 
   /** Saves at the end of each turn when window closes, disabled if user is not logged in */
-  async function saveGame() {
+  async function saveGameAndEnd() {
     if (!dataToSave) {
       return;
     }
@@ -242,7 +250,6 @@ function App() {
       const success = await fetch(request)
       .then((res) => res.json())
       .then((data) => {
-        console.log(data);
         return data;
       })
       .catch((e) => console.error(e));
@@ -254,11 +261,10 @@ function App() {
   };
 
   /** Restores save data for logged in user who saved game previously */
-  function restoreGame(data: Record<string, any>) {
+  const restoreGame: restoreGame = (data: Record<string, any>) => {
     const { numberOnDie, canRollDie, chosenPieceType, currentPlayerPosition, numberOfSquares, gameState, userName, chosenSquareData, currentScore, showMessage, messageContent, currentStamina, treasuresAndTrapsData } = data;
     const mapifiedTreasure = ObjectToMap(treasuresAndTrapsData);
     const mapifiedIslands = ObjectToMap(chosenSquareData);
-    console.log(chosenSquareData);
     setNumberOnDie(numberOnDie);
     setCanRollDie(canRollDie);
     setChosenPieceType(chosenPieceType);
@@ -274,32 +280,58 @@ function App() {
     makeTreasure(numberOfSquares, mapifiedTreasure)
   };
 
+  /** Deletes save game data if user logs out or starts over */
+  const deleteGame = async () => {
+    if (!isLoggedIn) {
+      return;
+    }
+    const body = JSON.stringify({name: userName});
+    const request = new Request('/api/users/deleteData', { method: 'DELETE', body: body, headers: {'Content-Type': 'application/json'} });
+    const deleted = await fetch(request)
+    .then((res) => res.json())
+    .then((data) => {
+      return data;
+    })
+    .catch((e) => console.error(e));
+    if (deleted === 'game deleted') {
+      console.log('game deleted');
+    } else {
+      console.log("Data wasn't deleted.");
+    }
+  };
+
   // --------------------- High Score --------------------
   
-  const fakeList: highScoreListType = [[100, 'Edelgard'], [90, 'Hubert'], [85, 'Linhardt'], [70, 'Ferdinand'], [60, 'Dorothea'], [55, 'Petra'], [10, 'Bernadetta'], [-10, 'Caspar']];
-  const [highScores, setHighScores] = useState<highScoreListType>(fakeList); // useEffect get list or use fake if failure
+  const fakeList = [[100, 'Edelgard'], [90, 'Hubert'], [85, 'Linhardt'], [70, 'Ferdinand'], [60, 'Dorothea'], [55, 'Petra'], [10, 'Bernadetta'], [-10, 'Caspar']];
+  const [highScores, setHighScores] = useState<any[]>(fakeList); // useEffect get list or use fake if failure
   const [showHighScores, setShowHighScores] = useState(false);
   const [newScoreIndex, setNewScoreIndex] = useState(-1);
 
   useEffect(() => {
     async function fetchData() {
-    await fetch('/api/highScores', {method: 'GET'})
-    .then((res) => {
-      const data = res.json();
-      return data;
-    })
-    .then((jdata) => {
-      if (!jdata || !Array.isArray(jdata)) {
-        throw new Error('no data gotten');
-      } else {
-        setHighScores(jdata);
+      const newScores = await fetch('/api/highScores', {method: 'GET'})
+      .then((res) => {
+        const data = res.json();
+        return data;
+      })
+      .then((jdata) => {
+        if (!jdata || !Array.isArray(jdata)) {
+          return null;
+        } else {
+          return jdata;
+        }
+      })
+      .catch((e) => {
+        console.error(e, 'error');
+        return null;
+      });
+      if (newScores !== null) {
+        setHighScores(newScores);
       }
-    })
-    .catch((e) => {
-      console.log(e, 'error');
-    })}
+    };
     fetchData();
   }, [showHighScores]);
+
 
   /** Checks if winning user's score should be entered in high score list */
   function checkList(list: highScoreListType, newEntry: [number, string]) {
@@ -400,8 +432,11 @@ function App() {
             <div onMouseEnter={() => handleHover('points')} onMouseLeave={() => handleHover('none')} style={{color: pointStaminaTextColor(currentStamina)}}>Stamina: <b>{currentStamina}</b>
             </div>
 
-            <button onClick={() => changeLogin()}>Log out</button><br></br>
-            <button disabled={gameState === 'wonGame' || isLoggedIn === false} onClick={() => saveGame()}>Save current game and log out?</button>
+            <button onClick={() => {
+              deleteGame();
+              changeLogin();
+            }}>Log out</button><br></br>
+            <button disabled={gameState === 'wonGame' || isLoggedIn === false} onClick={() => saveGameAndEnd()}>Save current game and log out?</button>
           </div>
 
           <div className="side-item" style={{margin: '2em'}}>
@@ -419,7 +454,10 @@ function App() {
           </div>
 
           <div className="side-item" style={{margin: '2em'}}>
-            <button className={newGameButtonClass} onClick={() => startOver()}>New Game?</button>
+            <button className={newGameButtonClass} onClick={() => {
+              deleteGame();
+              startOver();
+              }}>New Game?</button>
           </div>
         </div>
       </div>
@@ -430,4 +468,3 @@ function App() {
 }
 
 export default App
-export type { queryMessageType, gameStateTypes, dialogTypes, highScoreListType, IgameSaveData }

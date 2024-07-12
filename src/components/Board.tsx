@@ -1,7 +1,7 @@
 import Square from  './Square';
 import imageList from "../imageList";
 import './Board.css';
-import { squareStyleAttributes } from '../board-characteristics';
+import { squareStyleAttributes } from '../appTypes';
 
 /** Creates JSX for board layout */
 function Board(props: {numberOfSquares: number, pieceType: string, playerPosition: number, chosenSquareData: squareStyleAttributes}) {

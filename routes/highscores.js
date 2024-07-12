@@ -37,7 +37,7 @@ highScoreRoutes.get('/', async (req, res, next) => {
       next(err);
     }
   }, 
-  function (req, res, next) {
+  (req, res, next) => {
     try {
         const newList = req.body;
         res.status(200).set({ 'Content-Type': 'application/json'}).json({newList: newList});

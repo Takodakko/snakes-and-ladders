@@ -1,8 +1,9 @@
 import './Die.css';
 import { useMemo, useState } from 'react';
+import { rollDie } from '../appTypes';
 
 /** Creates the die face */
-function Die(props: {dots: number, rollDie: Function, canRollDie: boolean}) {
+function Die(props: {dots: number, rollDie: rollDie, canRollDie: boolean}) {
     const { dots, rollDie, canRollDie } = props;
 
     const [dieRolling, setDieRolling] = useState(false);

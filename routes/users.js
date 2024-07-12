@@ -42,12 +42,12 @@ function confirmLogin(user, password) {
 };
 
 function saveNewLogin(user, password) {
-    const isMatch = DB.includes((savedUsers) => savedUsers.name === user);
-    if (!isMatch) {
-        return false;
-    } else {
+    const isMatch = DB.findIndex((savedUsers) => savedUsers.name === user);
+    if (isMatch === -1) {
         DB.push({name: user, password: preparePasswordForDB(password)});
         return true;
+    } else {
+        return false;
     }
 };
 
@@ -61,7 +61,7 @@ function findSavedData(user) {
 };
 
 function saveGameData(user, data) {
-    otherTable[user] = data;
+    otherTable[user] = {...data};
     return true;
 };
 
@@ -83,7 +83,6 @@ usersRoutes.get('/getGame', async (req, res, next) => {
 usersRoutes.post('/saveGame', express.json(), async (req, res, next) => {
     try {
         const body = req.body;
-        console.log(body, 'body')
         const success = await saveGameData(body.name, body.game);
         if (!success) {
             res.status(200).set({ 'Content-Type': 'application/json' }).json('problem saving');
@@ -96,9 +95,25 @@ usersRoutes.post('/saveGame', express.json(), async (req, res, next) => {
     }
 });
 
+usersRoutes.delete('/deleteData', express.json(), async (req, res, next) => {
+    const body = req.body;
+    try {
+        const success = await saveGameData(body.name, {});
+        if (!success) {
+            res.status(200).set( { 'Content-Type': 'application/json' }).json('problem deleting');
+        } else {
+            res.status(200).set( { 'Content-Type': 'application/json' }).json('game deleted');
+        }
+    } catch(err) {
+        console.error(err);
+        next(err);
+    }
+});
+
 usersRoutes.post('/create', express.json(), async (req, res, next) => {
     try {
         const newUser = req.body;
+        console.log(newUser, 'newUser')
         const canSave =  await saveNewLogin(newUser.name, newUser.password);
         if (canSave) {
             res.status(200).set({ 'Content-Type': 'application/json' }).json('saved');

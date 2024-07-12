@@ -1,4 +1,4 @@
-import { gameStateTypes } from '../App';
+import { gameStateTypes } from '../appTypes';
 
 /** Creates game over pop up for win or loss */
 function GameOver(props: {gameState: gameStateTypes, hasArrived: boolean}) {

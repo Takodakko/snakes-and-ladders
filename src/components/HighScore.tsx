@@ -1,4 +1,4 @@
-import { highScoreListType } from "../App";
+import { highScoreListType } from "../appTypes";
 import './HighScore.css';
 
 /** Creates view for high score list */
