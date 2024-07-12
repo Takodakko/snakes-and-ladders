@@ -1,4 +1,5 @@
-type squareStyleAttributes = Map<number, [number, number, string, string, number]>
+type squareStyleArray = [number, number, string, string, number];
+type squareStyleAttributes = Map<number, squareStyleArray>
 type treasureTrapTypes = 'chest' | 'pit' | 'snake' | 'fruit' | 'nothing';
 type treasureTypeArray = Array<[treasureTrapTypes, number, string]>;
 type treasureTrapMap = Map<number, [treasureTrapTypes, number, string]>;
@@ -45,10 +46,29 @@ function placeTreasuresAndTraps(num: number) {
   return newMap;
 };
 
+function mapToObject(map: squareStyleAttributes | treasureTrapMap) {
+  const obj: Record<string, Array<any>> = {};
+  map.forEach((el, ind) => {
+    obj[`${ind}`] = [...el];
+  });
+  return obj;
+};
+
+function ObjectToMap(obj: Record<string, [treasureTrapTypes, number, string] | squareStyleArray>) {
+  const map = new Map();
+  Object.keys(obj).forEach((key) => {
+    const numKey = parseInt(key);
+    map.set(numKey, obj[key]);
+  });
+  return map;
+}
+
 const boardDeterminers = {
   squareAttributes,
   placeTreasuresAndTraps,
+  mapToObject,
+  ObjectToMap,
 };
 
 export default boardDeterminers
-export type { treasureTrapTypes, treasureTrapMap, squareStyleAttributes }
+export type { treasureTrapTypes, treasureTrapMap, squareStyleAttributes, squareStyleArray }

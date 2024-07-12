@@ -16,8 +16,21 @@ type highScoreListType = Array<[number, string]>;
 type gameStateTypes = 'login' | 'newGame' | 'playingGame' | 'wonGame';
 type dialogTypes = 'rest' | 'move' | 'points' | 'none';
 type queryMessageType = [treasureTrapTypes | 'query', number, string];
-
-const BASE = ``;
+interface IgameSaveData {
+    numberOnDie: number;
+    canRollDie: boolean;
+    chosenPieceType: string;
+    currentPlayerPosition: number;
+    numberOfSquares: number;
+    gameState: gameStateTypes;
+    userName: string;
+    chosenSquareData: squareStyleAttributes;
+    currentScore: number;
+    showMessage: boolean;
+    messageContent: queryMessageType;
+    currentStamina: number;
+    treasuresAndTrapsData: treasureTrapMap;
+};
 
 function App() {
 
@@ -29,8 +42,13 @@ function App() {
     startOver();
     setUserName('');
     setGameState('login');
+    setIsLoggedIn(false)
   }
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  function userIsRegistered(yes: boolean) {
+    setIsLoggedIn(yes);
+  };
 
   const [gameState, setGameState] = useState<gameStateTypes>('login');
 
@@ -46,9 +64,9 @@ function App() {
     setNewScoreIndex(-1);
   }
 
-  function displayUserName(name: string) {
+  function displayUserName(name: string, hasSetup: boolean) {
     setUserName(name);
-    setGameState('newGame');
+    setGameState(hasSetup ? 'newGame' : 'playingGame');
   };
 
   const newGameButtonClass = gameState === 'wonGame' ? 'new-game-pulse' : '';
@@ -124,7 +142,7 @@ function App() {
       checkList(highScores, [currentScore, userName]);
       setTimeout(() => {
         setShowHighScores(true);
-      }, 4000);
+      }, 3000);
     } else {
       if (newStamina <= 0) {
         setGameState('wonGame');
@@ -166,19 +184,23 @@ function App() {
   }
 
   // --------------------- Data to save state of game -----------------------
-  const { squareAttributes, placeTreasuresAndTraps } = boardDeterminers;
-  const chosenSquareData = useMemo<squareStyleAttributes>(() => {
-    const squares = squareAttributes(numberOfSquares);
-    return squares;
-  }, [numberOfSquares]); 
+  const { squareAttributes, placeTreasuresAndTraps, mapToObject, ObjectToMap } = boardDeterminers;
+  const [chosenSquareData, setChosenSquareData] = useState<squareStyleAttributes>(squareAttributes(2));
+  const [treasuresAndTrapsData, setTreasuresAndTrapsData] = useState<treasureTrapMap>(placeTreasuresAndTraps(2));
+  
+  function makeSquares(num: number, data?: squareStyleAttributes) {
+    const squares = data ? data : squareAttributes(num);
+    setChosenSquareData(squares);
+  };
 
-  const treasuresAndTrapsData = useMemo<treasureTrapMap>(() => {
-    const tAndT = placeTreasuresAndTraps(numberOfSquares);
-    return tAndT;
-  }, [numberOfSquares]);
+  function makeTreasure(num: number, data?: treasureTrapMap) {
+    const treasure = data ? data : placeTreasuresAndTraps(num);
+    setTreasuresAndTrapsData(treasure);
+  };
 
 
-  const dataToSave = useMemo(() => {
+  const dataToSave: IgameSaveData = useMemo(() => {
+    console.log('saving...')
     const data = {
       numberOnDie,
       canRollDie,
@@ -192,83 +214,60 @@ function App() {
       showMessage,
       messageContent,
       currentStamina,
+      treasuresAndTrapsData,
     };
     return data;
-  }, [numberOfSquares, numberOnDie, canRollDie, chosenPieceType, currentPlayerPosition, gameState, userName, chosenSquareData, currentScore, showMessage, messageContent, currentStamina]);
+  }, [numberOnDie]);
 
-  function saveGame() {
-    console.log(dataToSave, 'data');
-    //send save data to DB
-    changeLogin();
+  async function saveGame() {
+      const treasureMap = mapToObject(dataToSave.treasuresAndTrapsData);
+      const islandMap = mapToObject(dataToSave.chosenSquareData);
+      const body = JSON.stringify({name: userName, game: {...dataToSave, chosenSquareData: islandMap, treasuresAndTrapsData: treasureMap}});
+      const request = new Request('/api/users/saveGame', {method: 'POST', body: body, headers: {'Content-Type': 'application/json'} });
+      const success = await fetch(request)
+      .then((res) => res.json())
+      .then((data) => {
+        console.log(data);
+        return data;
+      })
+      .catch((e) => console.error(e));
+      if (success === 'game saved') {
+        changeLogin();
+      } else {
+        window.alert('There was an issue saving. Try again.');
+      }
+  };
+
+  function restoreGame(data: Record<string, any>) {
+    const { numberOnDie, canRollDie, chosenPieceType, currentPlayerPosition, numberOfSquares, gameState, userName, chosenSquareData, currentScore, showMessage, messageContent, currentStamina, treasuresAndTrapsData } = data;
+    const mapifiedTreasure = ObjectToMap(treasuresAndTrapsData);
+    const mapifiedIslands = ObjectToMap(chosenSquareData);
+    console.log(chosenSquareData);
+    setNumberOnDie(numberOnDie);
+    setCanRollDie(canRollDie);
+    setChosenPieceType(chosenPieceType);
+    setCurrentPlayerPosition(currentPlayerPosition);
+    setNumberOfSquares(numberOfSquares);
+    setGameState(gameState);
+    setUserName(userName);
+    setCurrentScore(currentScore);
+    setShowMessage(showMessage);
+    setMessageContent(messageContent);
+    setCurrentStamina(currentStamina);
+    makeSquares(numberOfSquares, mapifiedIslands);
+    makeTreasure(numberOfSquares, mapifiedTreasure)
   };
 
   // --------------------- High Score --------------------
   
   const fakeList: highScoreListType = [[100, 'Edelgard'], [90, 'Hubert'], [85, 'Linhardt'], [70, 'Ferdinand'], [60, 'Dorothea'], [55, 'Petra'], [10, 'Bernadetta'], [-10, 'Caspar']];
   const [highScores, setHighScores] = useState<highScoreListType>(fakeList); // useEffect get list or use fake if failure
-  const [whatThis, setWhatThis] = useState<any>('');
-  
-  // useEffect(async () => {
-  //   const response = await fetch('/highScores', {method: 'GET'});
-  //   let total = '';
-  //   for await (const chunk of response.body) {
-  //     total += chunk;
-  //   }
-  //   console.log(total, 'total')
-
-    // .then((res) => {
-    //   const data = res.body;
-    //   console.log(data, 'res');
-    //   return data;
-    // })
-    // .then((datar) => {
-    //   console.log(datar, 'datar');
-    //   setWhatThis(datar);
-    //   return datar;
-    // })
-    // .catch((e) => {
-    //   console.log(e, 'error');
-      
-    // })
-    //return newList;
-  // }, []);
-
-  // fetch('http://localhost:5173/highScores', {method: 'GET'})
-  // .then((res) => res.body)
-  // .then((rb) => {
-  //   const reader = rb?.getReader();
-
-  //   return new ReadableStream({
-  //     start(controller) {
-  //       function push() {
-  //         reader?.read().then(({done, value}) => {
-  //           if (done) {
-  //             console.log(done, 'done');
-  //             controller.close();
-  //             return;
-  //           }
-  //           controller.enqueue(value);
-  //           console.log(done, value, 'done value');
-  //           push();
-  //         });
-  //       }
-  //       push();
-  //     },
-  //   });
-  // })
-  // .then((stream) => {
-  //   new Response(stream, { headers: {'Content-Type': 'text/html' } }).text()
-  // })
-  // .then((result) => {
-  //   console.log(result, 'result')
-  // });
-
   const [showHighScores, setShowHighScores] = useState(false);
   const [newScoreIndex, setNewScoreIndex] = useState(-1);
 
   useEffect(() => {
     async function fetchData() {
-    await fetch(`${BASE}/highScores`, {method: 'GET'})
+    await fetch('/api/highScores', {method: 'GET'})
     .then((res) => {
       const data = res.json();
       return data;
@@ -287,6 +286,7 @@ function App() {
   }, [showHighScores]);
 
   function checkList(list: highScoreListType, newEntry: [number, string]) {
+    if (!isLoggedIn) return;
     const index = list.findIndex((el) => {
       if (el[0] > newEntry[0]) {
         return false;
@@ -301,8 +301,9 @@ function App() {
   };
 
   async function addListToDB(list: highScoreListType) {
+    if (!isLoggedIn) return;
     const body = JSON.stringify(list);
-    const request = new Request(`${BASE}/highScores`, {method: 'POST', body: body, headers: {'Content-Type': 'application/json'} })
+    const request = new Request('/api/highScores', {method: 'POST', body: body, headers: {'Content-Type': 'application/json'} })
     await fetch(request)
     .then((res) => res.json())
     .then((data) => {
@@ -314,6 +315,7 @@ function App() {
   }
 
   function addScore(list: highScoreListType, newEntry: [number, string], index: number) {
+    if (!isLoggedIn) return;
     if (index === -1) {
       return;
     } else if (index === 0) {
@@ -346,19 +348,19 @@ function App() {
     <div className="message-window-container" style={{display: showMessage ? 'flex' : 'none'}}>
       <MessageWindow content={messageContent} messageWindowClose={messageWindowClose} currentStamina={currentStamina} pointStaminaTextColor={pointStaminaTextColor(currentStamina)}/>
     </div>
-    {whatThis}
     <HighScore showHighScores={showHighScores} highScores={highScores} newScoreIndex={newScoreIndex}/>
 
     <div className="overall-view">
 
       <div style={{display: gameState === 'login' ? 'block' : 'none'}}>
-          <LoginView displayUserName={displayUserName}/>
+          <LoginView displayUserName={displayUserName} userIsRegistered={userIsRegistered} restoreGame={restoreGame}/>
       </div>
 
       <div className="board-side" style={{backgroundImage: `url(${imageList.waves})`, display: gameState === 'login' ? 'none' : 'block'}}>
         <GameOver gameState={gameState} hasArrived={currentPlayerPosition === numberOfSquares}/>
+
         <div style={{display: gameState === 'newGame' ? 'block' : 'none'}}>
-          <NewGameSetup changeNumberOfSquares={changeNumberOfSquares} changePieceType={changePieceType}/>
+          <NewGameSetup changeNumberOfSquares={changeNumberOfSquares} changePieceType={changePieceType} makeSquares={makeSquares} makeTreasure={makeTreasure}/>
         </div>
 
         <div className="card" style={{display: gameState === 'playingGame' || gameState === 'wonGame' ? 'block' : 'none'}}>
@@ -380,7 +382,7 @@ function App() {
             </div>
 
             <button onClick={() => changeLogin()}>Log out</button><br></br>
-            <button disabled={gameState === 'wonGame'} onClick={() => saveGame()}>Save current game and log out?</button>
+            <button disabled={gameState === 'wonGame' || isLoggedIn === false} onClick={() => saveGame()}>Save current game and log out?</button>
           </div>
 
           <div className="side-item" style={{margin: '2em'}}>
@@ -409,4 +411,4 @@ function App() {
 }
 
 export default App
-export type { queryMessageType, gameStateTypes, dialogTypes, highScoreListType }
+export type { queryMessageType, gameStateTypes, dialogTypes, highScoreListType, IgameSaveData }
