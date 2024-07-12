@@ -61,6 +61,8 @@ function LoginView(props: {displayUserName: displayUserName, userIsRegistered: u
           } else {
             displayUserName(name, true);
           }
+          setName('');
+          setPassword('');
           userIsRegistered(true);
           
         } else {
@@ -71,7 +73,10 @@ function LoginView(props: {displayUserName: displayUserName, userIsRegistered: u
 
     /** Queries backend and adds new user to DB if actuall new */
     async function addNameAndPassword(name: string, pword: string) {
-      if (name === 'Guest') {
+      if (name.length < 2 || pword.length < 8 || name === 'Guest') {
+        if (showWarning === 'red') {
+          window.alert('Check your username and password to login and proceed');
+        }
         setShowWarning('red');
         return;
       }
@@ -87,12 +92,14 @@ function LoginView(props: {displayUserName: displayUserName, userIsRegistered: u
         }
       })
       .catch((e) => console.error(e));
-
+      console.log(wasCreated)
       if (wasCreated === 'saved') {
         userIsRegistered(true);
         displayUserName(name, true);
+        setName('');
+        setPassword('');
       } else {
-        window.alert('There was an issue saving your user info');
+        window.alert('There was an issue saving your user info. Do you already have an account?');
       }
     };
     

@@ -239,7 +239,7 @@ function App() {
   };
 
   /** Saves at the end of each turn when window closes, disabled if user is not logged in */
-  async function saveGame() {
+  async function saveGameAndEnd() {
     if (!dataToSave) {
       return;
     }
@@ -278,6 +278,26 @@ function App() {
     setCurrentStamina(currentStamina);
     makeSquares(numberOfSquares, mapifiedIslands);
     makeTreasure(numberOfSquares, mapifiedTreasure)
+  };
+
+  /** Deletes save game data if user logs out or starts over */
+  const deleteGame = async () => {
+    if (!isLoggedIn) {
+      return;
+    }
+    const body = JSON.stringify({name: userName});
+    const request = new Request('/api/users/deleteData', { method: 'DELETE', body: body, headers: {'Content-Type': 'application/json'} });
+    const deleted = await fetch(request)
+    .then((res) => res.json())
+    .then((data) => {
+      return data;
+    })
+    .catch((e) => console.error(e));
+    if (deleted === 'game deleted') {
+      console.log('game deleted');
+    } else {
+      console.log("Data wasn't deleted.");
+    }
   };
 
   // --------------------- High Score --------------------
@@ -412,8 +432,11 @@ function App() {
             <div onMouseEnter={() => handleHover('points')} onMouseLeave={() => handleHover('none')} style={{color: pointStaminaTextColor(currentStamina)}}>Stamina: <b>{currentStamina}</b>
             </div>
 
-            <button onClick={() => changeLogin()}>Log out</button><br></br>
-            <button disabled={gameState === 'wonGame' || isLoggedIn === false} onClick={() => saveGame()}>Save current game and log out?</button>
+            <button onClick={() => {
+              deleteGame();
+              changeLogin();
+            }}>Log out</button><br></br>
+            <button disabled={gameState === 'wonGame' || isLoggedIn === false} onClick={() => saveGameAndEnd()}>Save current game and log out?</button>
           </div>
 
           <div className="side-item" style={{margin: '2em'}}>
@@ -431,7 +454,10 @@ function App() {
           </div>
 
           <div className="side-item" style={{margin: '2em'}}>
-            <button className={newGameButtonClass} onClick={() => startOver()}>New Game?</button>
+            <button className={newGameButtonClass} onClick={() => {
+              deleteGame();
+              startOver();
+              }}>New Game?</button>
           </div>
         </div>
       </div>
