@@ -1,6 +1,7 @@
 import { highScoreListType } from "../App";
 import './HighScore.css';
 
+/** Creates view for high score list */
 function HighScore(props: {highScores: highScoreListType, showHighScores: boolean, newScoreIndex: number}) {
     const {newScoreIndex, highScores, showHighScores} = props;
     let index = 0;

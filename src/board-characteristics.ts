@@ -37,6 +37,7 @@ const treasureTrapDetails: treasureTypeArray = [
   ['nothing', 0, "The island was quiet and empty. You explore a little, but there doesn't seem to be anything interesting here."]
 ];
 
+/** Calculates where treasures and traps will appear. Should merge with square attribute map creator */
 function placeTreasuresAndTraps(num: number) {
   const newMap: treasureTrapMap = new Map();
   for (let i = 1; i < num + 1; i++) {
@@ -46,6 +47,7 @@ function placeTreasuresAndTraps(num: number) {
   return newMap;
 };
 
+/** Used maps for board data to avoid forced stringifying of keys, but maps don't work well when transformed to JSON */
 function mapToObject(map: squareStyleAttributes | treasureTrapMap) {
   const obj: Record<string, Array<any>> = {};
   map.forEach((el, ind) => {
@@ -54,6 +56,7 @@ function mapToObject(map: squareStyleAttributes | treasureTrapMap) {
   return obj;
 };
 
+/** For restoring JSON objects that represent board to maps */
 function ObjectToMap(obj: Record<string, [treasureTrapTypes, number, string] | squareStyleArray>) {
   const map = new Map();
   Object.keys(obj).forEach((key) => {

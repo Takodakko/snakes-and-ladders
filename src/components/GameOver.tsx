@@ -1,5 +1,6 @@
 import { gameStateTypes } from '../App';
 
+/** Creates game over pop up for win or loss */
 function GameOver(props: {gameState: gameStateTypes, hasArrived: boolean}) {
     const { gameState, hasArrived } = props;
     const message = hasArrived ? "You've arrived!" : "Lost at sea";

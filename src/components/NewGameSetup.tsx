@@ -7,12 +7,14 @@ function NewGameSetup(props: {changeNumberOfSquares: Function, changePieceType: 
     const [number, setNumber] = useState(25);
     const [points, setPoints] = useState(0);
 
+    /** Displays how much stamina user will start with based on starting points and number of tiles */
     const staminaResult = useMemo(() => {
       const result = number - points - 1;
       return result;
     }, [number, points]);
 
-    const staminaOptions = useMemo(() => {
+    /** Displays drop down choices for how many points to start game with and number of tiles */
+    const startingPointOptions = useMemo(() => {
       const upperBound = number - 1;
       const options: JSX.Element[] = [];
       for (let i = 0; i < upperBound; i++) {
@@ -71,7 +73,7 @@ function NewGameSetup(props: {changeNumberOfSquares: Function, changePieceType: 
               <div>
                 Starting points:
               <select id={stamId} value={points} onChange={(p) => setPoints(parseInt(p.target.value))}>
-                {staminaOptions}
+                {startingPointOptions}
               </select>
               </div>
               <div>
