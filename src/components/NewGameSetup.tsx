@@ -62,7 +62,7 @@ function NewGameSetup(props: {changeNumberOfSquares: changeNumberOfSquares, chan
               <label htmlFor={tilesInputId}>
                 How many tiles do you want? (2-50)
               </label>
-              <input id={tilesInputId} type="number" name="numberoftilesinput" value={number < 51 && number > 0 ? number : ''} onChange={(n) => {
+              <input className="new-game-input" id={tilesInputId} type="number" name="numberoftilesinput" value={number < 51 && number > 0 ? number : ''} onChange={(n) => {
                 setNumber(parseInt(n.target.value));
                 setPoints(0);
                 }}>
@@ -73,19 +73,19 @@ function NewGameSetup(props: {changeNumberOfSquares: changeNumberOfSquares, chan
               </label>
               <div>
                 Starting points:
-              <select id={stamId} value={points} onChange={(p) => setPoints(parseInt(p.target.value))}>
+              <select className="new-game-input" id={stamId} value={points} onChange={(p) => setPoints(parseInt(p.target.value))}>
                 {startingPointOptions}
               </select>
               </div>
               <div>
                 Starting Stamina: 
-              <input disabled={true} value={staminaResult}></input>
+              <input className="new-game-input" disabled={true} value={staminaResult}></input>
               </div>
 
               <label htmlFor={pieceTypeId}>
                 What type of ship will you use?
               </label>
-              <select id={pieceTypeId} value={currentPieceType} onChange={(t) => setCurrentPieceType(t.target.value)}>
+              <select className="new-game-input" id={pieceTypeId} value={currentPieceType} onChange={(t) => setCurrentPieceType(t.target.value)}>
                 {selectors}
               </select>
               <button onSubmit={handleSubmit}>
