@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import Board from './components/Board';
 import LoginView from './components/LoginView';
 import NewGameSetup from './components/NewGameSetup';
