@@ -1,5 +1,7 @@
 import express from 'express';
 const usersRoutes = express.Router();
+// import test from '../db/users.js';
+import * as db from '../db/index.js';
 
 let DB = [{name: 'Hapi', password: 'onstersmay'}, {name: 'Coco', password: 'jousamaoay'}];
 let otherTable = {'Hapi': {}, 'Coco': {}};
@@ -64,6 +66,7 @@ function saveGameData(user, data) {
     otherTable[user] = {...data};
     return true;
 };
+
 
 usersRoutes.get('/getGame', async (req, res, next) => {
     try {

@@ -1,5 +1,7 @@
-import fs from 'node:fs/promises'
-import express from 'express'
+
+import fs from 'node:fs/promises';
+import 'dotenv/config';
+import express from 'express';
 import ViteExpress from 'vite-express';
 import highScoreRoutes from './routes/highscores.js';
 import usersRoutes from './routes/users.js';

@@ -9,6 +9,11 @@ type gameStateTypes = 'login' | 'newGame' | 'playingGame' | 'wonGame';
 type dialogTypes = 'rest' | 'move' | 'points' | 'none';
 type pieceTypes = 'sail' | 'cargo';
 type queryMessageType = [treasureTrapTypes | 'query', number, string];
+type dbHighScores = {
+    id: number,
+    name: string,
+    score: number
+};
 
 interface IgameSaveData {
     chosenPieceType: string;
@@ -60,4 +65,5 @@ export type {
     pieceTypes,
     makeSquares,
     makeTreasure,
+    dbHighScores,
 }

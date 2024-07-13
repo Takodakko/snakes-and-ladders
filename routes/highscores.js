@@ -1,5 +1,6 @@
 import express from 'express';
 const highScoreRoutes = express.Router();
+import queryDB from '../db/index.js';
 
 let dbList = [[100, 'Claude'], [90, 'Leonie'], [85, 'Lysithea'], [70, 'Lorenz'], [60, 'Ignatz'], [55, 'Raphael'], [10, 'Hilda'], [-10, 'Marianne']];
 function dbSave(list) {
@@ -10,15 +11,12 @@ function dbSave(list) {
         throw new Error('not right format');
     }
   };
-function dbRetrieve() {
-    return dbList;
-}
 
 highScoreRoutes.get('/', async (req, res, next) => {
     try {
       console.log('getting high scores...');
       // get from DB
-      const list = await dbRetrieve();
+      const list = await queryDB('getAll');
       res.status(200).set({ 'Content-Type': 'application/json' }).json(list);
     } catch (err) {
       console.error(err);
@@ -28,22 +26,19 @@ highScoreRoutes.get('/', async (req, res, next) => {
 
   highScoreRoutes.post('/', express.json(), async (req, res, next) => {
     try {
-      const list = req.body;
+      const entry = req.body;
+      console.log(entry, 'entry')
       // save to DB
-      const success = await dbSave(list);
-      next();
+      const success = await queryDB('postNewEntry', [entry.name, entry.score]);
+      console.log(success);
+      if (success.rows.length) {
+        res.status(200).set({ 'Content-Type': 'application/json'}).json({entry: entry});
+      } else {
+        res.status(500).set({ 'Content-Type': 'application/json'}).json({entry: 'fail'});
+      }
     } catch (err) {
-      console.error(err, '/highScores POST 1');
+      console.error(err);
       next(err);
-    }
-  }, 
-  (req, res, next) => {
-    try {
-        const newList = req.body;
-        res.status(200).set({ 'Content-Type': 'application/json'}).json({newList: newList});
-    } catch(err) {
-        console.error(err, '/highScores POST 2');
-        next(err);
     }
   }
 );
