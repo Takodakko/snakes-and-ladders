@@ -250,7 +250,7 @@ function App() {
         return data;
       })
       .catch((e) => console.error(e));
-      if (success === 'game saved') {
+      if (success.result === 'game saved') {
         changeLogin();
       } else {
         window.alert('There was an issue saving. Try again.');

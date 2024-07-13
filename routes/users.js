@@ -71,11 +71,7 @@ usersRoutes.get('/getGame', async (req, res, next) => {
     try {
         const user = req.query.name;
         const userData = await queryDB('getSavedGame', [user]);
-        if (!Object.keys(userData.data).length) {
-            res.status(200).set({ 'Content-Type': 'application/json' }).json('no data');
-        } else {
-            res.status(200).set({ 'Content-Type': 'application/json' }).json(userData);
-        }
+        res.status(200).set({ 'Content-Type': 'application/json' }).json(userData[0]);
     } catch(err) {
         console.error(err);
         next(err);
@@ -85,11 +81,11 @@ usersRoutes.get('/getGame', async (req, res, next) => {
 usersRoutes.post('/saveGame', express.json(), async (req, res, next) => {
     try {
         const body = req.body;
-        const success = await saveGameData(body.name, body.game);
-        if (!success) {
-            res.status(200).set({ 'Content-Type': 'application/json' }).json('problem saving');
+        const success = await queryDB('saveGameData', body);
+        if (success.command === 'UPDATE') {
+            res.status(200).set({ 'Content-Type': 'application/json' }).json({result: 'game saved'});
         } else {
-            res.status(200).set({ 'Content-Type': 'application/json' }).json('game saved');
+            res.status(200).set({ 'Content-Type': 'application/json' }).json({result: 'problem saving'});
         }
     } catch(err) {
         console.error(err);
@@ -100,11 +96,11 @@ usersRoutes.post('/saveGame', express.json(), async (req, res, next) => {
 usersRoutes.delete('/deleteData', express.json(), async (req, res, next) => {
     const body = req.body;
     try {
-        const success = await saveGameData(body.name, {});
-        if (!success) {
-            res.status(200).set( { 'Content-Type': 'application/json' }).json('problem deleting');
-        } else {
+        const success = await queryDB('deleteGameData', body.name);
+        if (success.command === 'UPDATE') {
             res.status(200).set( { 'Content-Type': 'application/json' }).json('game deleted');
+        } else {
+            res.status(200).set( { 'Content-Type': 'application/json' }).json('problem deleting');
         }
     } catch(err) {
         console.error(err);

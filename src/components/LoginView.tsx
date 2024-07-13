@@ -45,18 +45,14 @@ function LoginView(props: {displayUserName: displayUserName, userIsRegistered: u
         if (loggedIn === 'success') {
           const url = `/api/users/getGame?name=${name}`;
           const gameRequest = new Request(url, {method: 'GET'});
-          const hasSaveData: IgameSaveData | null = await fetch(gameRequest)
+          const hasSaveData: {game: IgameSaveData | null} = await fetch(gameRequest)
           .then((res) => res.json())
           .then((data) => {
-            if (data === 'no data') {
-              return null;
-            } else {
-              return data;
-            }
+            return data;
           })
           .catch((e) => console.error(e));
-          if (hasSaveData) {
-            restoreGame(hasSaveData);
+          if (hasSaveData.game) {
+            restoreGame(hasSaveData.game);
             displayUserName(name, false);
           } else {
             displayUserName(name, true);

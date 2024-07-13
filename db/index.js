@@ -26,9 +26,25 @@ const queries = {
     },
     'getSavedGame': async (name) => {
         try {
-            const key = await pool.query('SELECT * FROM users WHERE name = $1;', name);
-            const result = await pool.query('SELECT data FROM saved_game INNER JOIN users ON saved_game.id = $1;', [key.rows[0].fkey]);
-            return result.rows[0];
+            const result = await pool.query('SELECT game FROM users WHERE name = $1;', name);
+            return result.rows;
+        } catch(err) {
+            console.error(err);
+        }
+    },
+    'saveGameData': async (user) => {
+        try {
+            const { name, game } = user;
+            const result = await pool.query('UPDATE users SET game = $1 WHERE name = $2;', [game, name]);
+            return result;
+        } catch(err) {
+            console.error(err);
+        }
+    },
+    'deleteGameData': async (name) => {
+        try {
+            const result = await pool.query('UPDATE users SET game = null WHERE name = $1;', [name]);
+            return result;
         } catch(err) {
             console.error(err);
         }
