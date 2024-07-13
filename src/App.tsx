@@ -321,7 +321,6 @@ function App() {
         return null;
       });
       if (newScores !== null) {
-      console.log(newScores, 'newScores');
         const arrayified: highScoreListType = [];
         newScores.forEach((entry: dbHighScores) => {
           arrayified.push([entry.score, entry.name]);

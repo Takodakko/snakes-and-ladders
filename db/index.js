@@ -5,7 +5,7 @@ const { Pool } = pg;
 const pool = new Pool({
     connectionString: `postgres://${process.env.PG_USER}:${process.env.PW}@${process.env.PG_HOST}:${process.env.PG_PORT}/${process.env.PG_DB}`,
 });
-
+await pool.connect();
 
 const queries = {
     'getAll': async () => {
@@ -18,13 +18,14 @@ const queries = {
     },
     'postNewEntry': async (entry) => {
         try {
-            await pool.query('INSERT INTO high_scores (name, score) VALUES ($1, $2);', entry);
+            const result = await pool.query('INSERT INTO high_scores (name, score) VALUES ($1, $2);', entry);
+            return result;
         } catch(err) {
             console.error(err);
         }
     }
 }
-await pool.connect();
+
 
 async function queryDB(key, params) {
     
