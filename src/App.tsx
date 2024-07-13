@@ -29,6 +29,7 @@ import {
   displayUserName,
   handleHover,
   rollDie,
+  dbHighScores,
 } from './appTypes';
 
 function App() {
@@ -249,7 +250,7 @@ function App() {
         return data;
       })
       .catch((e) => console.error(e));
-      if (success === 'game saved') {
+      if (success.result === 'game saved') {
         changeLogin();
       } else {
         window.alert('There was an issue saving. Try again.');
@@ -309,7 +310,7 @@ function App() {
         return data;
       })
       .then((jdata) => {
-        if (!jdata || !Array.isArray(jdata)) {
+        if (!jdata) {
           return null;
         } else {
           return jdata;
@@ -320,7 +321,11 @@ function App() {
         return null;
       });
       if (newScores !== null) {
-        setHighScores([...newScores]);
+        const arrayified: highScoreListType = [];
+        newScores.forEach((entry: dbHighScores) => {
+          arrayified.push([entry.score, entry.name]);
+        });
+        setHighScores([...arrayified]);
       }
     };
     fetchData();
@@ -344,15 +349,17 @@ function App() {
   };
 
   /** Posts updated high score list to DB */
-  async function addListToDB(list: highScoreListType) {
+  async function addEntryToDB(entry: [number, string]) {
     if (!isLoggedIn) return;
-    const body = JSON.stringify(list);
+    const body = JSON.stringify({name: entry[1], score: entry[0]});
     const request = new Request('/api/highScores', {method: 'POST', body: body, headers: {'Content-Type': 'application/json'} })
     await fetch(request)
     .then((res) => res.json())
     .then((data) => {
-      if (data === 'porbelm') {
-        throw new Error('problem posting');
+      if (data.entry === 'fail') {
+        console.error('problem saving to DB');
+      } else {
+        console.log(data.entry, 'data.entry');
       }
     })
     .catch((e) => console.error(e));
@@ -367,13 +374,13 @@ function App() {
       list.unshift(newEntry);
       list.pop();
       setHighScores([...list]);
-      addListToDB(list);
+      addEntryToDB(newEntry);
       return;
     } else if (index === list.length - 1) {
       list.pop();
       list.push(newEntry);
       setHighScores([...list]);
-      addListToDB(list);
+      addEntryToDB(newEntry);
       return;
     } else {
       const front = list.slice(0, index);
@@ -381,7 +388,7 @@ function App() {
       front.push(newEntry);
       const newList = [...front, ...back];
       setHighScores([...newList]);
-      addListToDB(newList);
+      addEntryToDB(newEntry);
       return;
     }
   };

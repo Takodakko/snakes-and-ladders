@@ -1,9 +1,8 @@
 import express from 'express';
 const usersRoutes = express.Router();
+import queryDB from '../db/index.js';
 
-let DB = [{name: 'Hapi', password: 'onstersmay'}, {name: 'Coco', password: 'jousamaoay'}];
-let otherTable = {'Hapi': {}, 'Coco': {}};
-
+/** Placeholder fake encryption */
 function encrypt(str) {
   const first = str[0];
   const result = str.slice(1) + first + 'ay';
@@ -17,63 +16,12 @@ function decrypt(str) {
     return result;
 };
 
-function checkPassword(enteredStr, dbStr) {
-    const compare = decrypt(dbStr);
-    if (enteredStr === compare) {
-        return true;
-    } else {
-        return false;
-    }
-};
-
-function preparePasswordForDB(str) {
-    const encrypted = encrypt(str);
-    return encrypted;
-};
-
-function confirmLogin(user, password) {
-    const match = DB.find((savedUsers) => savedUsers.name === user);
-    if (!match) {
-        return false;
-    }
-    const passwordOk = checkPassword(password, match.password);
-    if (passwordOk) return true;
-    else return false;
-};
-
-function saveNewLogin(user, password) {
-    const isMatch = DB.findIndex((savedUsers) => savedUsers.name === user);
-    if (isMatch === -1) {
-        DB.push({name: user, password: preparePasswordForDB(password)});
-        return true;
-    } else {
-        return false;
-    }
-};
-
-function findSavedData(user) {
-    const data = otherTable[user];
-    if (Object.keys(data).length > 0) {
-        return data;
-    } else {
-        return null;
-    }
-};
-
-function saveGameData(user, data) {
-    otherTable[user] = {...data};
-    return true;
-};
 
 usersRoutes.get('/getGame', async (req, res, next) => {
     try {
         const user = req.query.name;
-        const userData = await findSavedData(user);
-        if (!userData) {
-            res.status(200).set({ 'Content-Type': 'application/json' }).json('no data');
-        } else {
-            res.status(200).set({ 'Content-Type': 'application/json' }).json(userData);
-        }
+        const userData = await queryDB('getSavedGame', [user]);
+        res.status(200).set({ 'Content-Type': 'application/json' }).json(userData.rows[0]);
     } catch(err) {
         console.error(err);
         next(err);
@@ -83,11 +31,11 @@ usersRoutes.get('/getGame', async (req, res, next) => {
 usersRoutes.post('/saveGame', express.json(), async (req, res, next) => {
     try {
         const body = req.body;
-        const success = await saveGameData(body.name, body.game);
-        if (!success) {
-            res.status(200).set({ 'Content-Type': 'application/json' }).json('problem saving');
+        const success = await queryDB('saveGameData', [body.game, body.name]);
+        if (success.command === 'UPDATE') {
+            res.status(200).set({ 'Content-Type': 'application/json' }).json({result: 'game saved'});
         } else {
-            res.status(200).set({ 'Content-Type': 'application/json' }).json('game saved');
+            res.status(200).set({ 'Content-Type': 'application/json' }).json({result: 'problem saving'});
         }
     } catch(err) {
         console.error(err);
@@ -98,11 +46,11 @@ usersRoutes.post('/saveGame', express.json(), async (req, res, next) => {
 usersRoutes.delete('/deleteData', express.json(), async (req, res, next) => {
     const body = req.body;
     try {
-        const success = await saveGameData(body.name, {});
-        if (!success) {
-            res.status(200).set( { 'Content-Type': 'application/json' }).json('problem deleting');
-        } else {
+        const success = await queryDB('deleteGameData', [body.name]);
+        if (success.command === 'UPDATE') {
             res.status(200).set( { 'Content-Type': 'application/json' }).json('game deleted');
+        } else {
+            res.status(200).set( { 'Content-Type': 'application/json' }).json('problem deleting');
         }
     } catch(err) {
         console.error(err);
@@ -113,12 +61,17 @@ usersRoutes.delete('/deleteData', express.json(), async (req, res, next) => {
 usersRoutes.post('/create', express.json(), async (req, res, next) => {
     try {
         const newUser = req.body;
-        const canSave =  await saveNewLogin(newUser.name, newUser.password);
-        if (canSave) {
-            res.status(200).set({ 'Content-Type': 'application/json' }).json('saved');
-          } else {
+        const alreadyExists = await queryDB('checkForUser', [newUser.name]);
+        if (alreadyExists.rows.length > 0) {
             res.status(200).set({ 'Content-Type': 'application/json' }).json('already exists');
-          }
+        } else {
+            const canSave =  await queryDB('addUser', [newUser.name, newUser.password]);
+            if (canSave.command === 'INSERT') {
+                res.status(200).set({ 'Content-Type': 'application/json' }).json('saved');
+              } else {
+                res.status(500).set({ 'Content-Type': 'application/json' }).json('not saved');
+              }
+        }
     } catch(err) {
         console.error(err);
         next(err);
@@ -128,8 +81,9 @@ usersRoutes.post('/create', express.json(), async (req, res, next) => {
 usersRoutes.post('/login', express.json(), async (req, res, next) => {
     try {
         const user = req.body;
-        const isUser = await confirmLogin(user.name, user.password);
-        if (!isUser) {
+        const pword = preparePasswordForDB(user.password);
+        const isUser = await queryDB('login', [user.name, pword]);
+        if (isUser.rows.length === 0) {
             res.status(200).set({ 'Content-Type': 'application/json' }).json('not a user');
         } else {
             res.status(200).set({ 'Content-Type': 'application/json' }).json('success');
