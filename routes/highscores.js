@@ -2,12 +2,11 @@ import express from 'express';
 const highScoreRoutes = express.Router();
 import queryDB from '../db/index.js';
 
-//let dbList = [[100, 'Claude'], [90, 'Leonie'], [85, 'Lysithea'], [70, 'Lorenz'], [60, 'Ignatz'], [55, 'Raphael'], [10, 'Hilda'], [-10, 'Marianne']];
 
 highScoreRoutes.get('/', async (req, res, next) => {
     try {
       const list = await queryDB('getAll');
-      res.status(200).set({ 'Content-Type': 'application/json' }).json(list);
+      res.status(200).set({ 'Content-Type': 'application/json' }).json(list.rows);
     } catch (err) {
       console.error(err);
       next(err);

@@ -8,55 +8,27 @@ const pool = new Pool({
 await pool.connect();
 
 const queries = {
-    'getAll': async () => {
-        try {
-            const result = await pool.query('SELECT * FROM high_scores ORDER BY score DESC LIMIT 8;');
-            return result.rows;
-        } catch(err) {
-            console.error(err);
-        }
-    },
-    'postNewEntry': async (entry) => {
-        try {
-            const result = await pool.query('INSERT INTO high_scores (name, score) VALUES ($1, $2);', entry);
-            return result;
-        } catch(err) {
-            console.error(err);
-        }
-    },
-    'getSavedGame': async (name) => {
-        try {
-            const result = await pool.query('SELECT game FROM users WHERE name = $1;', name);
-            return result.rows;
-        } catch(err) {
-            console.error(err);
-        }
-    },
-    'saveGameData': async (user) => {
-        try {
-            const { name, game } = user;
-            const result = await pool.query('UPDATE users SET game = $1 WHERE name = $2;', [game, name]);
-            return result;
-        } catch(err) {
-            console.error(err);
-        }
-    },
-    'deleteGameData': async (name) => {
-        try {
-            const result = await pool.query('UPDATE users SET game = null WHERE name = $1;', [name]);
-            return result;
-        } catch(err) {
-            console.error(err);
-        }
-    },
-}
+    'getAll': 'SELECT * FROM high_scores ORDER BY score DESC LIMIT 8;',
+    'postNewEntry': 'INSERT INTO high_scores (name, score) VALUES ($1, $2);',
+    'getSavedGame': 'SELECT game FROM users WHERE name = $1;',
+    'saveGameData': 'UPDATE users SET game = $1 WHERE name = $2;',
+    'deleteGameData': 'UPDATE users SET game = null WHERE name = $1;',
+    'login': 'SELECT * FROM users WHERE name = $1 AND password = $2;',
+    'checkForUser': 'SELECT * FROM users WHERE name = $1;',
+    'addUser': 'INSERT INTO users (name, password) VALUES ($1, $2);',
+};
 
-
+/** DB Tables users & high_scores
+ * users -> id serial not null, name text not null, password text not null, game json
+ * high_scores -> id serial not null, name text not null, score int not null
+  */
 async function queryDB(key, params) {
-    
-    const action = await queries[key](params);
-    
-    return action;
+    try {
+        const result = await pool.query(queries[key], params);
+        return result;
+    } catch(err) {
+        console.error(err);
+    }
 };
 
 //await pool.end();
