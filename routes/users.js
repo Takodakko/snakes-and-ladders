@@ -1,7 +1,6 @@
 import express from 'express';
 const usersRoutes = express.Router();
-// import test from '../db/users.js';
-import * as db from '../db/index.js';
+import queryDB from '../db/index.js';
 
 let DB = [{name: 'Hapi', password: 'onstersmay'}, {name: 'Coco', password: 'jousamaoay'}];
 let otherTable = {'Hapi': {}, 'Coco': {}};
@@ -71,8 +70,8 @@ function saveGameData(user, data) {
 usersRoutes.get('/getGame', async (req, res, next) => {
     try {
         const user = req.query.name;
-        const userData = await findSavedData(user);
-        if (!userData) {
+        const userData = await queryDB('getSavedGame', [user]);
+        if (!Object.keys(userData.data).length) {
             res.status(200).set({ 'Content-Type': 'application/json' }).json('no data');
         } else {
             res.status(200).set({ 'Content-Type': 'application/json' }).json(userData);

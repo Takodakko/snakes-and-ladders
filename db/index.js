@@ -23,7 +23,16 @@ const queries = {
         } catch(err) {
             console.error(err);
         }
-    }
+    },
+    'getSavedGame': async (name) => {
+        try {
+            const key = await pool.query('SELECT * FROM users WHERE name = $1;', name);
+            const result = await pool.query('SELECT data FROM saved_game INNER JOIN users ON saved_game.id = $1;', [key.rows[0].fkey]);
+            return result.rows[0];
+        } catch(err) {
+            console.error(err);
+        }
+    },
 }
 
 
