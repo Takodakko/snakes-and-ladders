@@ -30,7 +30,6 @@ const saveRestoreDeleteGame = {
         }
         localStorage.setItem(`savedGame-${name}`, JSON.stringify(dataToSaveAsJson));
         const body = JSON.stringify({name: name, game: dataToSaveAsJson});
-        console.log(body, 'body to send for saving')
         const request = new Request('/api/users/saveGame', {method: 'POST', body: body, headers: {'Content-Type': 'application/json'} });
         const success = await fetch(request)
       .then((res) => res.json())
@@ -38,7 +37,6 @@ const saveRestoreDeleteGame = {
         return data;
       })
       .catch((e) => console.error(e));
-      console.log(success, 'success in save')
       if (success.result === 'game saved') {
         return true;
       } else {
@@ -62,7 +60,6 @@ const saveRestoreDeleteGame = {
             return data;
           })
           .catch((e) => console.error(e));
-          console.log(dbSaveData, 'dbSaveData in restore')
           if (dbSaveData.game) {
             const modifiedDBSaveData = {...dbSaveData.game, treasuresAndTrapsData: objectToMap(dbSaveData.game.treasuresAndTrapsData), chosenSquareData: objectToMap(dbSaveData.game.chosenSquareData)};
             return modifiedDBSaveData;
@@ -86,7 +83,7 @@ const saveRestoreDeleteGame = {
       console.log('game deleted');
       return true;
     } else {
-      console.log("Data wasn't deleted.");
+      console.log("game wasn't deleted.");
       return false;
     }
   },

@@ -36,7 +36,6 @@ function LoginView(props: {displayUserName: displayUserName, userIsRegistered: u
           setShowWarning('red');
           return;
         }
-        console.log(name, 'name in sendName')
         const body = JSON.stringify({name: name, password: pword});
         const request = new Request('/api/users/login', {method: 'POST', body: body, headers: {'Content-Type': 'application/json'} })
         const loggedIn = await fetch(request)
@@ -47,9 +46,7 @@ function LoginView(props: {displayUserName: displayUserName, userIsRegistered: u
         .catch((e) => console.error(e));
 
         if (loggedIn === 'success') {
-          console.log(name, 'name in sendName 2')
           const savedGame = await restoreGameFromLocalOrDB(name);
-          console.log(savedGame, 'local')
           if (savedGame) {
             displayUserName(name, false);
             setName('');
@@ -88,7 +85,6 @@ function LoginView(props: {displayUserName: displayUserName, userIsRegistered: u
         }
       })
       .catch((e) => console.error(e));
-      console.log(wasCreated)
       if (wasCreated === 'saved') {
         userIsRegistered(true);
         displayUserName(name, true);
