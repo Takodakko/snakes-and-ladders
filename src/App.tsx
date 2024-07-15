@@ -13,8 +13,8 @@ import GameOver from './components/GameOver';
 import imageList from './imageList';
 import './App.css';
 import {
-  squareStyleAttributes,
-  treasureTrapMap,
+  islandAttributes,
+  treasureTrapMessageData,
   highScoreListType,
   gameStateTypes,
   dialogTypes,
@@ -22,7 +22,6 @@ import {
   userIsRegistered,
   IgameSaveData,
   pieceTypes,
-  makeTreasure,
   makeSquares,
   changePieceType,
   changeNumberOfSquares,
@@ -32,6 +31,7 @@ import {
   handleHover,
   rollDie,
   dbHighScores,
+  treasureTrapObject,
 } from './appTypes';
 
 function App() {
@@ -112,10 +112,19 @@ function App() {
     setMessageContent([...queryMessage]);
   };
 
+  const treasureTypeDictionary: treasureTrapObject = {
+    'chest': ['chest', 20, "There was a chest filled with treasure! Finders keepers, right?"],
+    'pit': ['pit', -2, "Apparently someone laid out some traps on this island. Some of your crew fell into a pitfall trap. :("],
+    'snake': ['snake', -5, "The island has many venomous snakes. You found that out when almost half your crew got bitten by them."],
+    'fruit': ['fruit', 15, "The island is filled with trees growing a delicious fruit! You load your ship up with it."],
+    'nothing': ['nothing', 0, "The island was quiet and empty. You explore a little, but there doesn't seem to be anything interesting here."],
+  };
+
   function exploreIsland() {
     const newStamina = currentStamina - 1;
     setCurrentStamina(newStamina);
-    const currentMessageContent = treasuresAndTrapsData.get(currentPlayerPosition) ?? ['nothing', 0, "The island was quiet and empty. You explore a little, but there doesn't seem to be anything interesting here."];
+    const messageForIsland = chosenIslandData.get(currentPlayerPosition);
+    const currentMessageContent: treasureTrapMessageData = messageForIsland ? treasureTypeDictionary[messageForIsland[5]] : treasureTypeDictionary['nothing'];
     setMessageContent([...currentMessageContent]);
     setShowMessage(true);
     addToScore(currentMessageContent[1]);
@@ -198,20 +207,17 @@ function App() {
   }
 
   // --------------------- Data to save state of game -----------------------
-  const { squareAttributes, placeTreasuresAndTraps } = boardDeterminers;
-  const [chosenSquareData, setChosenSquareData] = useState<squareStyleAttributes>(squareAttributes(2));
-  const [treasuresAndTrapsData, setTreasuresAndTrapsData] = useState<treasureTrapMap>(placeTreasuresAndTraps(2));
+  const { decideIslandAttributes } = boardDeterminers;
+  const [chosenIslandData, setChosenIslandData] = useState<islandAttributes>(decideIslandAttributes(2));
   
   /** Either recreates islands from saved data or creates from scratch */
-  const makeSquares: makeSquares = (num: number, data: squareStyleAttributes | null) => {
-    const squares = data ? data : squareAttributes(num);
-    setChosenSquareData(squares);
-  };
-
-  /** Either uses saved data or creates treasure and trap data from scratch */
-  const makeTreasure: makeTreasure = (num: number, data: treasureTrapMap | null) => {
-    const treasure = data ? data : placeTreasuresAndTraps(num);
-    setTreasuresAndTrapsData(treasure);
+  const makeSquares: makeSquares = (num: number, data: islandAttributes | null, score: number, stamina: number, position: number) => {
+    const squares = data ? data : decideIslandAttributes(num);
+    setChosenIslandData(squares);
+    setNumberOfSquares(num);
+    setCurrentScore(score);
+    setCurrentStamina(stamina);
+    setCurrentPlayerPosition(position);
   };
 
   const [dataToSave, setDataToSave] = useState<IgameSaveData | null>(null);
@@ -227,10 +233,9 @@ function App() {
         currentPlayerPosition,
         numberOfSquares,
         userName,
-        chosenSquareData,
+        chosenIslandData,
         currentScore: points,
         currentStamina: stamina,
-        treasuresAndTrapsData,
       };
        setDataToSave({...data});
        saveGame(data, points, stamina, userName, true);
@@ -258,8 +263,7 @@ function App() {
     const gameData = await restoreGame(name);
     if (gameData !== null) {
       setDataToSave(gameData);
-      makeSquares(gameData.numberOfSquares, gameData.chosenSquareData);
-      makeTreasure(gameData.numberOfSquares, gameData.treasuresAndTrapsData);
+      makeSquares(gameData.numberOfSquares, gameData.chosenIslandData, gameData.currentScore, gameData.currentStamina, gameData.currentPlayerPosition);
       setGameState('playingGame');
       return true;
     } else {
@@ -399,11 +403,11 @@ function App() {
         <GameOver gameState={gameState} hasArrived={currentPlayerPosition === numberOfSquares}/>
 
         <div style={{display: gameState === 'newGame' ? 'block' : 'none'}}>
-          <NewGameSetup changeNumberOfSquares={changeNumberOfSquares} changePieceType={changePieceType} makeSquares={makeSquares} makeTreasure={makeTreasure}/>
+          <NewGameSetup changeNumberOfSquares={changeNumberOfSquares} changePieceType={changePieceType} makeSquares={makeSquares}/>
         </div>
 
         <div className="card" style={{display: gameState === 'playingGame' || gameState === 'finishedGame' ? 'block' : 'none'}}>
-          <Board numberOfSquares={numberOfSquares} pieceType={chosenPieceType} playerPosition={currentPlayerPosition} chosenSquareData={chosenSquareData}/>
+          <Board numberOfSquares={numberOfSquares} pieceType={chosenPieceType} playerPosition={currentPlayerPosition} chosenIslandData={chosenIslandData}/>
         </div>
       </div>
 

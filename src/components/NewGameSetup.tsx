@@ -1,10 +1,10 @@
 import { useState, useId, useMemo } from 'react';
 import './NewGameSetup.css';
-import { changeNumberOfSquares, changePieceType, pieceTypes, makeSquares, makeTreasure } from '../appTypes';
+import { changeNumberOfSquares, changePieceType, pieceTypes, makeSquares } from '../appTypes';
 
 /** Creates the view for choosing game settings before starting a new game */
-function NewGameSetup(props: {changeNumberOfSquares: changeNumberOfSquares, changePieceType: changePieceType, makeSquares: makeSquares, makeTreasure: makeTreasure}) {
-    const { changePieceType, changeNumberOfSquares, makeSquares, makeTreasure } = props;
+function NewGameSetup(props: {changeNumberOfSquares: changeNumberOfSquares, changePieceType: changePieceType, makeSquares: makeSquares}) {
+    const { changePieceType, changeNumberOfSquares, makeSquares } = props;
     const [number, setNumber] = useState(25);
     const [points, setPoints] = useState(0);
 
@@ -43,8 +43,7 @@ function NewGameSetup(props: {changeNumberOfSquares: changeNumberOfSquares, chan
         if (number > 1 && number < 51) {
             changeNumberOfSquares(number, staminaResult, points);
             changePieceType(currentPieceType);
-            makeSquares(number, null);
-            makeTreasure(number, null);
+            makeSquares(number, null, points, staminaResult, 1);
         } else {
             setTileNumberWarning(true);
             setTimeout(() => {

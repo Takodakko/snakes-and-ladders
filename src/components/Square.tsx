@@ -1,9 +1,9 @@
 import './Square.css';
 import PlayerPiece from './PlayerPiece';
-import type { styleAttributesType } from '../appTypes';
+import type { islandStyleArray } from '../appTypes';
 
 /** Creates JSX for each tile on board */
-function Square(props: {tileNumber: string, pieceType: string, hasPiece: boolean, styleAttributes: styleAttributesType}) {
+function Square(props: {tileNumber: string, pieceType: string, hasPiece: boolean, styleAttributes: islandStyleArray}) {
     const {tileNumber, pieceType, hasPiece, styleAttributes} = props;
     
     const margin = styleAttributes[0];

@@ -1,7 +1,7 @@
-import { IgameSaveData, squareStyleAttributes, treasureTrapMap, treasureTrapTypes, squareStyleArray } from "../appTypes";
+import { IgameSaveData, islandStyleArray, islandAttributes } from "../appTypes";
 
 /** Used maps for board data to avoid forced stringifying of keys, but maps don't work well when transformed to JSON */
-function mapToObject(map: squareStyleAttributes | treasureTrapMap) {
+function mapToObject(map: islandAttributes) {
   const obj: Record<string, Array<any>> = {};
   map.forEach((el, ind) => {
     obj[`${ind}`] = [...el];
@@ -10,7 +10,7 @@ function mapToObject(map: squareStyleAttributes | treasureTrapMap) {
 };
 
 /** For restoring JSON objects that represent board to maps */
-function objectToMap(obj: Record<string, [treasureTrapTypes, number, string] | squareStyleArray>) {
+function objectToMap(obj: Record<string, islandStyleArray>) {
   const map = new Map();
   Object.keys(obj).forEach((key) => {
     const numKey = parseInt(key);
@@ -19,12 +19,12 @@ function objectToMap(obj: Record<string, [treasureTrapTypes, number, string] | s
   return map;
 };
 
+
 const saveRestoreDeleteGame = {
   /** Saves game to local storage and optionally to DB */
   saveGame: async (data: IgameSaveData, points: number, stamina: number, name: string, autoSave: boolean) => {
-        const objectifiedTreasureMap = mapToObject(data.treasuresAndTrapsData);
-        const objectifiedIslandMap = mapToObject(data.chosenSquareData);
-        const dataToSaveAsJson = { ...data, treasuresAndTrapsData: objectifiedTreasureMap, chosenSquareData: objectifiedIslandMap, currentScore: points, currentStamina: stamina };
+        const objectifiedIslandMap = mapToObject(data.chosenIslandData);
+        const dataToSaveAsJson = { ...data, chosenIslandData: objectifiedIslandMap, currentScore: points, currentStamina: stamina };
         if (!autoSave) {
           return true;
         }
@@ -49,7 +49,7 @@ const saveRestoreDeleteGame = {
     const localSaveData = localStorage.getItem(`savedGame-${name}`);
     const localSaveDataJS = localSaveData !== null ? JSON.parse(localSaveData) : null;
     if (localSaveDataJS !== null) {
-      const modifiedLocalSaveData = {...localSaveDataJS, treasuresAndTrapsData: objectToMap(localSaveDataJS.treasuresAndTrapsData), chosenSquareData: objectToMap(localSaveDataJS.chosenSquareData)};
+      const modifiedLocalSaveData = {...localSaveDataJS, chosenIslandData: objectToMap(localSaveDataJS.chosenIslandData)};
       return modifiedLocalSaveData;
     } else {
       const url = `/api/users/getGame?name=${name}`;
@@ -61,7 +61,7 @@ const saveRestoreDeleteGame = {
           })
           .catch((e) => console.error(e));
           if (dbSaveData.game) {
-            const modifiedDBSaveData = {...dbSaveData.game, treasuresAndTrapsData: objectToMap(dbSaveData.game.treasuresAndTrapsData), chosenSquareData: objectToMap(dbSaveData.game.chosenSquareData)};
+            const modifiedDBSaveData = {...dbSaveData.game, chosenIslandData: objectToMap(dbSaveData.game.chosenIslandData)};
             return modifiedDBSaveData;
           } else {
             return null;
