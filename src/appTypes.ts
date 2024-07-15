@@ -32,7 +32,7 @@ type handleHover = (dialogType: dialogTypes) => void;
 /** Sets user name to show on screen, and either starts game from save or moves to set up step if no save */
 type displayUserName = (name: string, hasSetup: boolean) => void;
 /** Restores save data for logged in user who saved game previously */
-type restoreGame = (data: Record<string, any>) => void;
+// type restoreGame = (data: Record<string, any>) => void;
 /** Progresses window to next step, either closing it, or changing text if player explores */
 type messageWindowClose = (onlyClose: boolean) => void;
 type changeNumberOfSquares = (num: number, stamina: number, points: number) => void;
@@ -41,6 +41,8 @@ type changePieceType = (type: string) => void;
 type makeSquares = (num: number, data: squareStyleAttributes | null) => void;
 /** Either uses saved data or creates treasure and trap data from scratch */
 type makeTreasure = (num: number, data: treasureTrapMap | null) => void;
+/** Tries to restore game either from local storage or DB and informs if successful */
+type restoreGameFromLocalOrDB = (name: string) => Promise<boolean>;
 
 export type {
     styleAttributesType,
@@ -58,7 +60,7 @@ export type {
     rollDie,
     handleHover,
     displayUserName,
-    restoreGame,
+    restoreGameFromLocalOrDB,
     messageWindowClose,
     changeNumberOfSquares,
     changePieceType,

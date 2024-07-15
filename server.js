@@ -73,7 +73,7 @@ app.use('/main', async (req, res) => {
 })
 
 
-ViteExpress.listen(app, 3000, () => console.log("Server is listening..."));
+ViteExpress.listen(app, 3000, () => console.log("Server is listening on port 3000..."));
 
 
 // Start http server

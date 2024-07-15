@@ -1,5 +1,5 @@
 
-import { squareStyleArray, squareStyleAttributes, treasureTrapTypes, treasureTypeArray, treasureTrapMap } from "./appTypes";
+import { squareStyleAttributes, treasureTypeArray, treasureTrapMap } from "../appTypes";
 
 /** Calculates appearance determining attributes for randomly generated board */
 function squareAttributes(numberOfSquares: number) {
@@ -44,30 +44,11 @@ function placeTreasuresAndTraps(num: number) {
   return newMap;
 };
 
-/** Used maps for board data to avoid forced stringifying of keys, but maps don't work well when transformed to JSON */
-function mapToObject(map: squareStyleAttributes | treasureTrapMap) {
-  const obj: Record<string, Array<any>> = {};
-  map.forEach((el, ind) => {
-    obj[`${ind}`] = [...el];
-  });
-  return obj;
-};
 
-/** For restoring JSON objects that represent board to maps */
-function ObjectToMap(obj: Record<string, [treasureTrapTypes, number, string] | squareStyleArray>) {
-  const map = new Map();
-  Object.keys(obj).forEach((key) => {
-    const numKey = parseInt(key);
-    map.set(numKey, obj[key]);
-  });
-  return map;
-}
 
 const boardDeterminers = {
   squareAttributes,
   placeTreasuresAndTraps,
-  mapToObject,
-  ObjectToMap,
 };
 
 export default boardDeterminers

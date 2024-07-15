@@ -6,7 +6,9 @@ import Die from './components/Die';
 import HighScore from './components/HighScore';
 import InfoDialog from './components/InfoDialog';
 import MessageWindow from './components/MessageWIndow';
-import boardDeterminers from './board-characteristics';
+import boardDeterminers from './calculations/board-characteristics';
+import saveRestoreDeleteGame from './calculations/save-restore-delete-game';
+const { saveGame, restoreGame, deleteGame } = saveRestoreDeleteGame;
 import GameOver from './components/GameOver';
 import imageList from './imageList';
 import './App.css';
@@ -25,7 +27,7 @@ import {
   changePieceType,
   changeNumberOfSquares,
   messageWindowClose,
-  restoreGame,
+  restoreGameFromLocalOrDB,
   displayUserName,
   handleHover,
   rollDie,
@@ -43,7 +45,6 @@ function App() {
     setUserName('');
     setGameState('login');
     setIsLoggedIn(false);
-    setDataToSave(null);
   }
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
@@ -197,7 +198,7 @@ function App() {
   }
 
   // --------------------- Data to save state of game -----------------------
-  const { squareAttributes, placeTreasuresAndTraps, mapToObject, ObjectToMap } = boardDeterminers;
+  const { squareAttributes, placeTreasuresAndTraps } = boardDeterminers;
   const [chosenSquareData, setChosenSquareData] = useState<squareStyleAttributes>(squareAttributes(2));
   const [treasuresAndTrapsData, setTreasuresAndTrapsData] = useState<treasureTrapMap>(placeTreasuresAndTraps(2));
   
@@ -232,66 +233,53 @@ function App() {
         treasuresAndTrapsData,
       };
        setDataToSave({...data});
+       saveGame(data, points, stamina, userName, true);
     }
   };
 
   /** Saves at the end of each turn when window closes, disabled if user is not logged in */
   async function saveGameAndEnd() {
     if (!dataToSave) {
+      console.log('no dataToSave');
       return;
     }
-      const treasureMap = mapToObject(dataToSave.treasuresAndTrapsData);
-      const islandMap = mapToObject(dataToSave.chosenSquareData);
-      const body = JSON.stringify({name: userName, game: {...dataToSave, chosenSquareData: islandMap, treasuresAndTrapsData: treasureMap}});
-      const request = new Request('/api/users/saveGame', {method: 'POST', body: body, headers: {'Content-Type': 'application/json'} });
-      const success = await fetch(request)
-      .then((res) => res.json())
-      .then((data) => {
-        return data;
-      })
-      .catch((e) => console.error(e));
-      if (success.result === 'game saved') {
-        changeLogin();
+      const isSuccessful = await saveGame(dataToSave, currentScore, currentStamina, userName, false);
+      if (isSuccessful) {
+        console.log('saved');
+        setGameState('login');
       } else {
-        window.alert('There was an issue saving. Try again.');
+        console.log('not saved');
+        setGameState('login');
       }
   };
 
-  /** Restores save data for logged in user who saved game previously */
-  const restoreGame: restoreGame = (data: Record<string, any>) => {
-    const { chosenPieceType, currentPlayerPosition, numberOfSquares, userName, chosenSquareData, currentScore, currentStamina, treasuresAndTrapsData } = data;
-    setNumberOnDie(1);
-    setCanRollDie(true);
-    setChosenPieceType(chosenPieceType);
-    setCurrentPlayerPosition(currentPlayerPosition);
-    setNumberOfSquares(numberOfSquares);
-    setGameState('playingGame');
-    setUserName(userName);
-    setCurrentScore(currentScore);
-    setShowMessage(false);
-    setMessageContent([...queryMessage]);
-    setCurrentStamina(currentStamina);
-    makeSquares(numberOfSquares, ObjectToMap(chosenSquareData));
-    makeTreasure(numberOfSquares, ObjectToMap(treasuresAndTrapsData))
-  };
+  /** Tries to restore game either from local storage or DB and informs if successful */
+     const restoreGameFromLocalOrDB: restoreGameFromLocalOrDB = async (name: string) => {
+       const gameData = await restoreGame(name);
+       if (gameData !== null) {
+        setDataToSave(gameData);
+        makeSquares(gameData.numberOfSquares, gameData.chosenSquareData);
+        makeTreasure(gameData.numberOfSquares, gameData.treasuresAndTrapsData);
+        setGameState('playingGame');
+        return true;
+       } else {
+        setDataToSave(null);
+        setGameState('newGame');
+        return false;
+       }
+     };
+
 
   /** Deletes save game data if user logs out or starts over */
-  const deleteGame = async () => {
+  const endAndDeleteGame = async () => {
     if (!isLoggedIn) {
       return;
     }
-    const body = JSON.stringify({name: userName});
-    const request = new Request('/api/users/deleteData', { method: 'DELETE', body: body, headers: {'Content-Type': 'application/json'} });
-    const deleted = await fetch(request)
-    .then((res) => res.json())
-    .then((data) => {
-      return data;
-    })
-    .catch((e) => console.error(e));
-    if (deleted === 'game deleted') {
-      console.log('game deleted');
+    const isSuccessful = await deleteGame(userName);
+    if (isSuccessful) {
+      console.log('deleted');
     } else {
-      console.log("Data wasn't deleted.");
+      console.log('not deleted');
     }
   };
 
@@ -393,7 +381,6 @@ function App() {
     }
   };
   
-  
 
   return (
     <>
@@ -405,7 +392,7 @@ function App() {
     <div className="overall-view">
 
       <div style={{display: gameState === 'login' ? 'block' : 'none'}}>
-          <LoginView displayUserName={displayUserName} userIsRegistered={userIsRegistered} restoreGame={restoreGame}/>
+          <LoginView displayUserName={displayUserName} userIsRegistered={userIsRegistered} restoreGameFromLocalOrDB={restoreGameFromLocalOrDB}/>
       </div>
 
       <div className="board-side" style={{backgroundImage: `url(${imageList.waves})`, display: gameState === 'login' ? 'none' : 'block'}}>
@@ -434,7 +421,7 @@ function App() {
             </div>
 
             <button onClick={() => {
-              deleteGame();
+              endAndDeleteGame();
               changeLogin();
             }}>Log out</button><br></br>
             <button disabled={gameState === 'wonGame' || isLoggedIn === false} onClick={() => saveGameAndEnd()}>Save current game and log out?</button>
@@ -456,7 +443,7 @@ function App() {
 
           <div className="side-item" style={{margin: '2em'}}>
             <button className={newGameButtonClass} onClick={() => {
-              deleteGame();
+              endAndDeleteGame();
               startOver();
               }}>New Game?</button>
           </div>
