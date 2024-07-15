@@ -29,3 +29,10 @@
 # Running locally
 
 -This is a pretty standard React Node application, though it is using Vite for the Dev server. Clone, install dependencies, and use 'npm run dev' to run locally.
+
+-In your .env file, put in the following for your DB:
+  --PG_USER=The DB user name
+  --PG_PASS=The DB Password
+  --PG_PORT=The DB port
+  --PG_DB=The DB name
+  --PG_HOST=The DB Host

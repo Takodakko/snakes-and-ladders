@@ -13,8 +13,8 @@ import GameOver from './components/GameOver';
 import imageList from './imageList';
 import './App.css';
 import {
-  squareStyleAttributes,
-  treasureTrapMap,
+  islandAttributes,
+  treasureTrapMessageData,
   highScoreListType,
   gameStateTypes,
   dialogTypes,
@@ -22,7 +22,6 @@ import {
   userIsRegistered,
   IgameSaveData,
   pieceTypes,
-  makeTreasure,
   makeSquares,
   changePieceType,
   changeNumberOfSquares,
@@ -32,6 +31,7 @@ import {
   handleHover,
   rollDie,
   dbHighScores,
+  treasureTrapObject,
 } from './appTypes';
 
 function App() {
@@ -73,7 +73,7 @@ function App() {
     setGameState(hasSetup ? 'newGame' : 'playingGame');
   };
 
-  const newGameButtonClass = gameState === 'wonGame' ? 'new-game-pulse' : '';
+  const newGameButtonClass = gameState === 'finishedGame' ? 'new-game-pulse' : '';
 
 // ------------------ Game setup --------------------------
   const [numberOfSquares, setNumberOfSquares] = useState(25);
@@ -112,15 +112,24 @@ function App() {
     setMessageContent([...queryMessage]);
   };
 
+  const treasureTypeDictionary: treasureTrapObject = {
+    'chest': ['chest', 20, "There was a chest filled with treasure! Finders keepers, right?"],
+    'pit': ['pit', -2, "Apparently someone laid out some traps on this island. Some of your crew fell into a pitfall trap. :("],
+    'snake': ['snake', -5, "The island has many venomous snakes. You found that out when almost half your crew got bitten by them."],
+    'fruit': ['fruit', 15, "The island is filled with trees growing a delicious fruit! You load your ship up with it."],
+    'nothing': ['nothing', 0, "The island was quiet and empty. You explore a little, but there doesn't seem to be anything interesting here."],
+  };
+
   function exploreIsland() {
     const newStamina = currentStamina - 1;
-    setCurrentStamina(currentStamina - 1);
-    const currentMessageContent = treasuresAndTrapsData.get(currentPlayerPosition) ?? ['nothing', 0, "The island was quiet and empty. You explore a little, but there doesn't seem to be anything interesting here."];
+    setCurrentStamina(newStamina);
+    const messageForIsland = chosenIslandData.get(currentPlayerPosition);
+    const currentMessageContent: treasureTrapMessageData = messageForIsland ? treasureTypeDictionary[messageForIsland[5]] : treasureTypeDictionary['nothing'];
     setMessageContent([...currentMessageContent]);
     setShowMessage(true);
     addToScore(currentMessageContent[1]);
     if (newStamina <= 0) {
-      setGameState('wonGame');
+      setGameState('finishedGame');
       setShowMessage(false);
     }
   };
@@ -129,7 +138,7 @@ function App() {
   const messageWindowClose: messageWindowClose = (onlyClose: boolean) => {
     if (onlyClose) {
       setShowMessage(false);
-      saveGameData(currentScore, currentStamina);
+      autoSaveGameData(currentScore, currentStamina);
     } else {
       exploreIsland();
     }
@@ -148,14 +157,14 @@ function App() {
       }, 200);
     
     if (nextSpace >= numberOfSquares) {
-      setGameState('wonGame');
+      setGameState('finishedGame');
       checkList(highScores, [currentScore, userName]);
       setTimeout(() => {
         setShowHighScores(true);
       }, 3000);
     } else {
       if (newStamina <= 0) {
-        setGameState('wonGame');
+        setGameState('finishedGame');
         setShowMessage(false);
         return;
       }
@@ -172,7 +181,7 @@ function App() {
     setCurrentStamina(currentStamina + halfOfDie);
     setCurrentScore(currentScore - 1);
     setCanRollDie(true);
-    saveGameData(currentScore - 1, currentStamina + halfOfDie);
+    autoSaveGameData(currentScore - 1, currentStamina + halfOfDie);
   };
 
   /** Adds to player's current score */
@@ -198,26 +207,23 @@ function App() {
   }
 
   // --------------------- Data to save state of game -----------------------
-  const { squareAttributes, placeTreasuresAndTraps } = boardDeterminers;
-  const [chosenSquareData, setChosenSquareData] = useState<squareStyleAttributes>(squareAttributes(2));
-  const [treasuresAndTrapsData, setTreasuresAndTrapsData] = useState<treasureTrapMap>(placeTreasuresAndTraps(2));
+  const { decideIslandAttributes } = boardDeterminers;
+  const [chosenIslandData, setChosenIslandData] = useState<islandAttributes>(decideIslandAttributes(2));
   
   /** Either recreates islands from saved data or creates from scratch */
-  const makeSquares: makeSquares = (num: number, data: squareStyleAttributes | null) => {
-    const squares = data ? data : squareAttributes(num);
-    setChosenSquareData(squares);
-  };
-
-  /** Either uses saved data or creates treasure and trap data from scratch */
-  const makeTreasure: makeTreasure = (num: number, data: treasureTrapMap | null) => {
-    const treasure = data ? data : placeTreasuresAndTraps(num);
-    setTreasuresAndTrapsData(treasure);
+  const makeSquares: makeSquares = (num: number, data: islandAttributes | null, score: number, stamina: number, position: number) => {
+    const squares = data ? data : decideIslandAttributes(num);
+    setChosenIslandData(squares);
+    setNumberOfSquares(num);
+    setCurrentScore(score);
+    setCurrentStamina(stamina);
+    setCurrentPlayerPosition(position);
   };
 
   const [dataToSave, setDataToSave] = useState<IgameSaveData | null>(null);
 
-  /** Save data if user is logged in, unused otherwise */
-  const saveGameData = (points: number, stamina: number) => {
+  /** Save data at end of each turn if user is logged in, unused otherwise */
+  const autoSaveGameData = (points: number, stamina: number) => {
     if (!isLoggedIn) {
       setDataToSave(null);
     } else {
@@ -227,10 +233,9 @@ function App() {
         currentPlayerPosition,
         numberOfSquares,
         userName,
-        chosenSquareData,
+        chosenIslandData,
         currentScore: points,
         currentStamina: stamina,
-        treasuresAndTrapsData,
       };
        setDataToSave({...data});
        saveGame(data, points, stamina, userName, true);
@@ -254,20 +259,19 @@ function App() {
   };
 
   /** Tries to restore game either from local storage or DB and informs if successful */
-     const restoreGameFromLocalOrDB: restoreGameFromLocalOrDB = async (name: string) => {
-       const gameData = await restoreGame(name);
-       if (gameData !== null) {
-        setDataToSave(gameData);
-        makeSquares(gameData.numberOfSquares, gameData.chosenSquareData);
-        makeTreasure(gameData.numberOfSquares, gameData.treasuresAndTrapsData);
-        setGameState('playingGame');
-        return true;
-       } else {
-        setDataToSave(null);
-        setGameState('newGame');
-        return false;
-       }
-     };
+  const restoreGameFromLocalOrDB: restoreGameFromLocalOrDB = async (name: string) => {
+    const gameData = await restoreGame(name);
+    if (gameData !== null) {
+      setDataToSave(gameData);
+      makeSquares(gameData.numberOfSquares, gameData.chosenIslandData, gameData.currentScore, gameData.currentStamina, gameData.currentPlayerPosition);
+      setGameState('playingGame');
+      return true;
+    } else {
+      setDataToSave(null);
+      setGameState('newGame');
+      return false;
+    }
+  };
 
 
   /** Deletes save game data if user logs out or starts over */
@@ -336,7 +340,7 @@ function App() {
     }
   };
 
-  /** Posts updated high score list to DB */
+  /** Posts new high score to DB */
   async function addEntryToDB(entry: [number, string]) {
     if (!isLoggedIn) return;
     const body = JSON.stringify({name: entry[1], score: entry[0]});
@@ -347,7 +351,7 @@ function App() {
       if (data.entry === 'fail') {
         console.error('problem saving to DB');
       } else {
-        console.log(data.entry, 'data.entry');
+        console.log('high score added to DB');
       }
     })
     .catch((e) => console.error(e));
@@ -399,15 +403,15 @@ function App() {
         <GameOver gameState={gameState} hasArrived={currentPlayerPosition === numberOfSquares}/>
 
         <div style={{display: gameState === 'newGame' ? 'block' : 'none'}}>
-          <NewGameSetup changeNumberOfSquares={changeNumberOfSquares} changePieceType={changePieceType} makeSquares={makeSquares} makeTreasure={makeTreasure}/>
+          <NewGameSetup changeNumberOfSquares={changeNumberOfSquares} changePieceType={changePieceType} makeSquares={makeSquares}/>
         </div>
 
-        <div className="card" style={{display: gameState === 'playingGame' || gameState === 'wonGame' ? 'block' : 'none'}}>
-          <Board numberOfSquares={numberOfSquares} pieceType={chosenPieceType} playerPosition={currentPlayerPosition} chosenSquareData={chosenSquareData}/>
+        <div className="card" style={{display: gameState === 'playingGame' || gameState === 'finishedGame' ? 'block' : 'none'}}>
+          <Board numberOfSquares={numberOfSquares} pieceType={chosenPieceType} playerPosition={currentPlayerPosition} chosenIslandData={chosenIslandData}/>
         </div>
       </div>
 
-      <div style={{display: gameState === 'playingGame' || gameState === 'wonGame' ? 'block' : 'none'}}>
+      <div style={{display: gameState === 'playingGame' || gameState === 'finishedGame' ? 'block' : 'none'}}>
         <div style={{position: 'sticky', top: '30px'}} className="side-card">
           <div className="side-item" style={{color: 'black'}}>
             Ships and Islands<br></br>
@@ -424,7 +428,7 @@ function App() {
               endAndDeleteGame();
               changeLogin();
             }}>Log out</button><br></br>
-            <button disabled={gameState === 'wonGame' || isLoggedIn === false} onClick={() => saveGameAndEnd()}>Save current game and log out?</button>
+            <button disabled={gameState === 'finishedGame' || isLoggedIn === false} onClick={() => saveGameAndEnd()}>Save current game and log out?</button>
           </div>
 
           <div className="side-item" style={{margin: '2em'}}>
@@ -433,10 +437,10 @@ function App() {
           </div>
 
           <div>
-            <button onMouseEnter={() => handleHover('move')} onMouseLeave={() => handleHover('none')} disabled={gameState === 'wonGame' || canRollDie || showMessage} onClick={() => movePiece(numberOnDie)}>Move Forward<br></br> (- stamina)</button>
+            <button onMouseEnter={() => handleHover('move')} onMouseLeave={() => handleHover('none')} disabled={gameState === 'finishedGame' || canRollDie || showMessage} onClick={() => movePiece(numberOnDie)}>Move Forward<br></br> (- stamina)</button>
             <InfoDialog handleHover={handleHover} identifier='move' hover={hover}/>
             <br></br>
-            <button onMouseEnter={() => handleHover('rest')} onMouseLeave={() => handleHover('none')} disabled={gameState === 'wonGame' || canRollDie || showMessage} onClick={() => rest()}>Rest and recover<br></br> (+ stamina)</button>
+            <button onMouseEnter={() => handleHover('rest')} onMouseLeave={() => handleHover('none')} disabled={gameState === 'finishedGame' || canRollDie || showMessage} onClick={() => rest()}>Rest and recover<br></br> (+ stamina)</button>
             <InfoDialog handleHover={handleHover} identifier='rest' hover={hover}/>
           </div>
           </div>

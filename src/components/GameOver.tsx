@@ -7,7 +7,7 @@ function GameOver(props: {gameState: gameStateTypes, hasArrived: boolean}) {
     const messageClass = hasArrived ? "win-message" : "loss-message";
   return (
     <>
-      <div className={messageClass} style={{display: gameState === 'wonGame' ? 'flex' : 'none'}}>
+      <div className={messageClass} style={{display: gameState === 'finishedGame' ? 'flex' : 'none'}}>
         <div><b><i>{message}</i></b></div>
       </div>
     </>

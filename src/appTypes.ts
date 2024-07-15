@@ -1,11 +1,10 @@
-type styleAttributesType = [number, number, string, string, number];
-type squareStyleArray = [number, number, string, string, number];
-type squareStyleAttributes = Map<number, squareStyleArray>
+type islandStyleArray = [number, number, string, string, number, treasureTrapTypes];
+type islandAttributes = Map<number, islandStyleArray>
 type treasureTrapTypes = 'chest' | 'pit' | 'snake' | 'fruit' | 'nothing';
-type treasureTypeArray = Array<[treasureTrapTypes, number, string]>;
-type treasureTrapMap = Map<number, [treasureTrapTypes, number, string]>;
+type treasureTrapMessageData = [treasureTrapTypes, number, string];
+type treasureTrapObject = Record<treasureTrapTypes, treasureTrapMessageData>;
 type highScoreListType = Array<[number, string]>;
-type gameStateTypes = 'login' | 'newGame' | 'playingGame' | 'wonGame';
+type gameStateTypes = 'login' | 'newGame' | 'playingGame' | 'finishedGame';
 type dialogTypes = 'rest' | 'move' | 'points' | 'none';
 type pieceTypes = 'sail' | 'cargo';
 type queryMessageType = [treasureTrapTypes | 'query', number, string];
@@ -20,10 +19,9 @@ interface IgameSaveData {
     currentPlayerPosition: number;
     numberOfSquares: number;
     userName: string;
-    chosenSquareData: squareStyleAttributes;
+    chosenIslandData: islandAttributes;
     currentScore: number;
     currentStamina: number;
-    treasuresAndTrapsData: treasureTrapMap;
 };
 
 type userIsRegistered = (yes: boolean) => void;
@@ -31,26 +29,21 @@ type rollDie = (num: number) => void;
 type handleHover = (dialogType: dialogTypes) => void;
 /** Sets user name to show on screen, and either starts game from save or moves to set up step if no save */
 type displayUserName = (name: string, hasSetup: boolean) => void;
-/** Restores save data for logged in user who saved game previously */
-// type restoreGame = (data: Record<string, any>) => void;
 /** Progresses window to next step, either closing it, or changing text if player explores */
 type messageWindowClose = (onlyClose: boolean) => void;
 type changeNumberOfSquares = (num: number, stamina: number, points: number) => void;
 type changePieceType = (type: string) => void;
 /** Either recreates islands from saved data or creates from scratch */
-type makeSquares = (num: number, data: squareStyleAttributes | null) => void;
-/** Either uses saved data or creates treasure and trap data from scratch */
-type makeTreasure = (num: number, data: treasureTrapMap | null) => void;
+type makeSquares = (num: number, data: islandAttributes | null, score: number, stamina: number, position: number) => void;
 /** Tries to restore game either from local storage or DB and informs if successful */
 type restoreGameFromLocalOrDB = (name: string) => Promise<boolean>;
 
 export type {
-    styleAttributesType,
-    squareStyleArray,
-    squareStyleAttributes,
+    islandStyleArray,
+    islandAttributes,
     treasureTrapTypes,
-    treasureTypeArray,
-    treasureTrapMap,
+    treasureTrapMessageData,
+    treasureTrapObject,
     highScoreListType,
     gameStateTypes,
     dialogTypes,
@@ -66,6 +59,5 @@ export type {
     changePieceType,
     pieceTypes,
     makeSquares,
-    makeTreasure,
     dbHighScores,
 }

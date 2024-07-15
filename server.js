@@ -7,7 +7,7 @@ import highScoreRoutes from './routes/highscores.js';
 import usersRoutes from './routes/users.js';
 
 const isProduction = process.env.NODE_ENV === 'production'
-const port = process.env.PORT || 5173
+const port = process.env.PORT || 3000
 const base = process.env.BASE || '/'
 
 const templateHtml = isProduction
@@ -73,10 +73,4 @@ app.use('/main', async (req, res) => {
 })
 
 
-ViteExpress.listen(app, 3000, () => console.log("Server is listening on port 3000..."));
-
-
-// Start http server
-// app.listen(port, () => {
-//   console.log(`Server started at http://localhost:${port}`)
-// })
+ViteExpress.listen(app, port, () => console.log(`Server is listening on port ${port}...`));

@@ -1,19 +1,20 @@
 import Square from  './Square';
 import imageList from "../imageList";
 import './Board.css';
-import { squareStyleAttributes } from '../appTypes';
+import { islandAttributes, islandStyleArray, treasureTrapTypes } from '../appTypes';
 
 /** Creates JSX for board layout */
-function Board(props: {numberOfSquares: number, pieceType: string, playerPosition: number, chosenSquareData: squareStyleAttributes}) {
-    const { numberOfSquares, playerPosition, chosenSquareData } = props;
+function Board(props: {numberOfSquares: number, pieceType: string, playerPosition: number, chosenIslandData: islandAttributes}) {
+    const { numberOfSquares, playerPosition, chosenIslandData } = props;
     
     const pieceType = imageList[props.pieceType];
-    
+    const defaultMessageType: treasureTrapTypes = 'nothing';
+
     const listOfSquares = () => {
       const array: JSX.Element[] = [];
       for (let i = numberOfSquares; i > 0; i--) {
-        const styleAttributes = chosenSquareData.get(i - 1) ?? [0, 0, 'darkgreen', '50% 50% 50% 50%', 2];
-        array.push(<Square styleAttributes={styleAttributes} hasPiece={playerPosition === i} pieceType={pieceType} key={i} tileNumber={(i).toString()}/>);
+        const islandStyleArray: islandStyleArray = chosenIslandData.get(i - 1) ?? [0, 0, 'darkgreen', '50% 50% 50% 50%', 2, defaultMessageType];
+        array.push(<Square styleAttributes={islandStyleArray} hasPiece={playerPosition === i} pieceType={pieceType} key={i} tileNumber={(i).toString()}/>);
       }
       return array;
     };
