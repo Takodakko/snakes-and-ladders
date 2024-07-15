@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import './LoginView.css';
-import { IgameSaveData, userIsRegistered, displayUserName, restoreGame } from '../appTypes';
+import { userIsRegistered, displayUserName, restoreGameFromLocalOrDB } from '../appTypes';
 
 /** Creates the view for the log in screen */
-function LoginView(props: {displayUserName: displayUserName, userIsRegistered: userIsRegistered, restoreGame: restoreGame}) {
-    const { userIsRegistered, displayUserName, restoreGame } = props;
+function LoginView(props: {displayUserName: displayUserName, userIsRegistered: userIsRegistered, restoreGameFromLocalOrDB: restoreGameFromLocalOrDB}) {
+    const { userIsRegistered, displayUserName, restoreGameFromLocalOrDB } = props;
     const [name, setName] = useState('');
     const [password, setPassword] = useState('');
     const [showWarning, setShowWarning] = useState('black');
@@ -19,11 +19,14 @@ function LoginView(props: {displayUserName: displayUserName, userIsRegistered: u
       setPassword('');
     };
     
+    
     /** Immediately moves on if guest option chosen. Otherwise queries backend to confirm log in and to check for saved data */
     async function sendNameAndPassword(name: string, pword: string, guest: boolean) {
       if (guest === true) {
         displayUserName(name, true);
         userIsRegistered(false);
+        setName('');
+        setPassword('');
         return;
       } else {
         if (name.length < 2 || pword.length < 8 || name === 'Guest') {
@@ -33,6 +36,7 @@ function LoginView(props: {displayUserName: displayUserName, userIsRegistered: u
           setShowWarning('red');
           return;
         }
+        console.log(name, 'name in sendName')
         const body = JSON.stringify({name: name, password: pword});
         const request = new Request('/api/users/login', {method: 'POST', body: body, headers: {'Content-Type': 'application/json'} })
         const loggedIn = await fetch(request)
@@ -43,24 +47,20 @@ function LoginView(props: {displayUserName: displayUserName, userIsRegistered: u
         .catch((e) => console.error(e));
 
         if (loggedIn === 'success') {
-          const url = `/api/users/getGame?name=${name}`;
-          const gameRequest = new Request(url, {method: 'GET'});
-          const hasSaveData: {game: IgameSaveData | null} = await fetch(gameRequest)
-          .then((res) => res.json())
-          .then((data) => {
-            return data;
-          })
-          .catch((e) => console.error(e));
-          if (hasSaveData.game) {
-            restoreGame(hasSaveData.game);
+          console.log(name, 'name in sendName 2')
+          const savedGame = await restoreGameFromLocalOrDB(name);
+          console.log(savedGame, 'local')
+          if (savedGame) {
             displayUserName(name, false);
-          } else {
-            displayUserName(name, true);
+            setName('');
+            setPassword('');
+            userIsRegistered(true);
+            return;
           }
+          displayUserName(name, true);
           setName('');
           setPassword('');
           userIsRegistered(true);
-          
         } else {
           window.alert('Check your username and password to login and proceed');
         }
