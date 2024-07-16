@@ -8,7 +8,9 @@ import InfoDialog from './components/InfoDialog';
 import MessageWindow from './components/MessageWIndow';
 import boardDeterminers from './calculations/board-characteristics';
 import saveRestoreDeleteGame from './calculations/save-restore-delete-game';
+import highScoreCalculations from './calculations/high-score-calculations';
 const { saveGame, restoreGame, deleteGame } = saveRestoreDeleteGame;
+const { addScoreToList, checkScoreAgainstList } = highScoreCalculations;
 import GameOver from './components/GameOver';
 import imageList from './imageList';
 import './App.css';
@@ -159,6 +161,7 @@ function App() {
     if (nextSpace >= numberOfSquares) {
       setGameState('finishedGame');
       checkList(highScores, [currentScore, userName]);
+      removeSavedGameData();
       setTimeout(() => {
         setShowHighScores(true);
       }, 3000);
@@ -166,6 +169,7 @@ function App() {
       if (newStamina <= 0) {
         setGameState('finishedGame');
         setShowMessage(false);
+        removeSavedGameData();
         return;
       }
       setTimeout(() => {
@@ -274,8 +278,8 @@ function App() {
   };
 
 
-  /** Deletes save game data if user logs out or starts over */
-  const endAndDeleteGame = async () => {
+  /** Deletes save game data if user logs out or starts over or finishes by win or loss */
+  const removeSavedGameData = async () => {
     if (!isLoggedIn) {
       return;
     }
@@ -327,13 +331,7 @@ function App() {
   /** Checks if winning user's score should be entered in high score list */
   function checkList(list: highScoreListType, newEntry: [number, string]) {
     if (!isLoggedIn) return;
-    const index = list.findIndex((el) => {
-      if (el[0] > newEntry[0]) {
-        return false;
-      } else {
-        return true;
-      }
-    });
+    const index = checkScoreAgainstList(list, newEntry);
     if (index !== -1) {
       setNewScoreIndex(index);
       addScore(list, newEntry, index);
@@ -362,23 +360,8 @@ function App() {
     if (!isLoggedIn) return;
     if (index === -1) {
       return;
-    } else if (index === 0) {
-      list.unshift(newEntry);
-      list.pop();
-      setHighScores([...list]);
-      addEntryToDB(newEntry);
-      return;
-    } else if (index === list.length - 1) {
-      list.pop();
-      list.push(newEntry);
-      setHighScores([...list]);
-      addEntryToDB(newEntry);
-      return;
     } else {
-      const front = list.slice(0, index);
-      const back = list.slice(index + 1);
-      front.push(newEntry);
-      const newList = [...front, ...back];
+      const newList = addScoreToList(list, newEntry, index);
       setHighScores([...newList]);
       addEntryToDB(newEntry);
       return;
@@ -425,7 +408,7 @@ function App() {
             </div>
 
             <button onClick={() => {
-              endAndDeleteGame();
+              removeSavedGameData();
               changeLogin();
             }}>Log out</button><br></br>
             <button disabled={gameState === 'finishedGame' || isLoggedIn === false} onClick={() => saveGameAndEnd()}>Save current game and log out?</button>
@@ -447,7 +430,7 @@ function App() {
 
           <div className="side-item" style={{margin: '2em'}}>
             <button className={newGameButtonClass} onClick={() => {
-              endAndDeleteGame();
+              removeSavedGameData();
               startOver();
               }}>New Game?</button>
           </div>
