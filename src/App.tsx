@@ -208,7 +208,7 @@ function App() {
 
   const handleHover: handleHover = (dialogType: dialogTypes = 'none') => {
     setHover(dialogType);
-  }
+  };
 
   // --------------------- Data to save state of game -----------------------
   const { decideIslandAttributes } = boardDeterminers;
