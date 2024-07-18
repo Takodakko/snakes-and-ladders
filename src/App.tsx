@@ -5,7 +5,7 @@ import NewGameSetup from './components/NewGameSetup';
 import Die from './components/Die';
 import HighScore from './components/HighScore';
 import InfoDialog from './components/InfoDialog';
-import MessageWindow from './components/MessageWIndow';
+import MessageWindow from './components/MessageWindow';
 import boardDeterminers from './calculations/board-characteristics';
 import saveRestoreDeleteGame from './calculations/save-restore-delete-game';
 import highScoreCalculations from './calculations/high-score-calculations';
