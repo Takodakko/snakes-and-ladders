@@ -1,13 +1,11 @@
 import Square from  './Square';
-import imageList from "../imageList";
 import './Board.css';
 import { islandAttributes, islandStyleArray, treasureTrapTypes } from '../appTypes';
 
 /** Creates JSX for board layout */
 function Board(props: {numberOfSquares: number, pieceType: string, playerPosition: number, chosenIslandData: islandAttributes}) {
-    const { numberOfSquares, playerPosition, chosenIslandData } = props;
+    const { numberOfSquares, playerPosition, chosenIslandData, pieceType } = props;
     
-    const pieceType = imageList[props.pieceType];
     const defaultMessageType: treasureTrapTypes = 'nothing';
 
     const listOfSquares = () => {

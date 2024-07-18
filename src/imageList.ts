@@ -19,4 +19,7 @@ const imageList: Record<string, string> = {
     nothing: nothing,
 };
 
+
+// const imageList = () => list;
+
 export default imageList
