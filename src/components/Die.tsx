@@ -61,10 +61,10 @@ function Die(props: {dots: number, rollDie: rollDie, canRollDie: boolean}) {
 
   return (
     <>
-      <div className={dieFaceClass} style={{backgroundColor: canRollDie ? 'white' : 'gray'}} onClick={() => canRollDie ? rolling() : {}}>
+      <div data-testid="die" className={dieFaceClass} style={{backgroundColor: canRollDie ? 'white' : 'gray'}} onClick={() => canRollDie ? rolling() : {}}>
         {faceDots}
       </div>
-      <div style={{color: '#63c4e2', opacity: canRollDie ? 100 : 0}}>
+      <div id="roll-die-text" style={{color: '#63c4e2', opacity: canRollDie ? 100 : 0}}>
         <b>Roll the die!</b>
       </div>
     </>
