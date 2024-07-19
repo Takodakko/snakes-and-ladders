@@ -1,7 +1,7 @@
-import { describe, expect, test } from '@jest/globals';
+import { describe, expect, test, afterEach } from '@jest/globals';
 import { render } from '@testing-library/react';
 import '@testing-library/jest-dom';
-// import userEvent from '@testing-library/user-event';
+import userEvent from '@testing-library/user-event';
 import MessageWindow from '../../components/MessageWindow';
 import mockData from '../__mocks__/mockData';
 import mockFunctions from '../__mocks__/mockFunctions';
@@ -9,6 +9,11 @@ const { mockMessageWindowClose } = mockFunctions;
 const { mockQueryMessage, mockTreasureTypeDictionary } = mockData;
 
 describe('Message Window Component', () => {
+
+    afterEach(() => {
+        mockMessageWindowClose.mockReset();
+    });
+
     test('Displays current stamina with appropriate color', () => {
         const { queryByText, rerender } = render(<MessageWindow messageWindowClose={mockMessageWindowClose} currentStamina={2} pointStaminaTextColor="red" content={mockQueryMessage}/>);
         expect(queryByText('Current Stamina: 2'));
@@ -40,5 +45,21 @@ describe('Message Window Component', () => {
         const buttons2 = queryAllByRole('button');
         expect(buttons2.length).toBe(1);
         expect(queryByText('Ok')).toBe(buttons2[0]);
+    });
+
+    test('Call MessageWindowClose when any button is clicked', async () => {
+        const user = userEvent.setup();
+        const { queryAllByRole, getByRole, rerender } = render(<MessageWindow messageWindowClose={mockMessageWindowClose} currentStamina={2} pointStaminaTextColor="red" content={mockQueryMessage}/>);
+        const [button1, button2] = queryAllByRole('button');
+        await user.click(button1);
+        expect(mockMessageWindowClose).toHaveBeenCalledWith(true);
+        await user.click(button2);
+        expect(mockMessageWindowClose).toHaveBeenLastCalledWith(false);
+        expect(mockMessageWindowClose).toHaveBeenCalledTimes(2);
+        rerender(<MessageWindow messageWindowClose={mockMessageWindowClose} currentStamina={2} pointStaminaTextColor="red" content={mockTreasureTypeDictionary.chest}/>);
+        const onlyButton = getByRole('button');
+        await user.click(onlyButton);
+        expect(mockMessageWindowClose).toHaveBeenLastCalledWith(true);
+        expect(mockMessageWindowClose).toHaveBeenCalledTimes(3);
     });
 });
