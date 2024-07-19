@@ -1,4 +1,4 @@
-import { dialogTypes, queryMessageType, treasureTrapObject } from '../../appTypes';
+import { dialogTypes, queryMessageType, treasureTrapObject, highScoreListType } from '../../appTypes';
 
 const mockMessages: Record<dialogTypes, string> = {
     points: 'Collect points from islands. You lose 1 point for each turn. Some islands have traps that make you lose points.',
@@ -17,10 +17,13 @@ const mockMessages: Record<dialogTypes, string> = {
     'nothing': ['nothing', 0, "The island was quiet and empty. You explore a little, but there doesn't seem to be anything interesting here."],
   };
 
+  const mockHighScoreList: highScoreListType = [[100, 'Edelgard'], [90, 'Hubert'], [85, 'Linhardt'], [70, 'Ferdinand'], [60, 'Dorothea'], [55, 'Petra'], [10, 'Bernadetta'], [-10, 'Caspar']];
+
   const mockData = {
     mockMessages,
     mockQueryMessage,
     mockTreasureTypeDictionary,
+    mockHighScoreList,
   };
 
   export default mockData;
