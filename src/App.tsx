@@ -5,12 +5,13 @@ import NewGameSetup from './components/NewGameSetup';
 import Die from './components/Die';
 import HighScore from './components/HighScore';
 import InfoDialog from './components/InfoDialog';
-import MessageWindow from './components/MessageWIndow';
+import MessageWindow from './components/MessageWindow';
 import boardDeterminers from './calculations/board-characteristics';
 import saveRestoreDeleteGame from './calculations/save-restore-delete-game';
 import highScoreCalculations from './calculations/high-score-calculations';
 const { saveGame, restoreGame, deleteGame } = saveRestoreDeleteGame;
 const { addScoreToList, checkScoreAgainstList } = highScoreCalculations;
+import { getAllHighScores, addNewHighScoreToDB } from './api';
 import GameOver from './components/GameOver';
 import imageList from './imageList';
 import './App.css';
@@ -300,22 +301,7 @@ function App() {
 
   useEffect(() => {
     async function fetchData() {
-      const newScores = await fetch('/api/highScores', {method: 'GET'})
-      .then((res) => {
-        const data = res.json();
-        return data;
-      })
-      .then((jdata) => {
-        if (!jdata) {
-          return null;
-        } else {
-          return jdata;
-        }
-      })
-      .catch((e) => {
-        console.error(e, 'error');
-        return null;
-      });
+      const newScores: dbHighScores[] | null = await getAllHighScores();
       if (newScores !== null) {
         const arrayified: highScoreListType = [];
         newScores.forEach((entry: dbHighScores) => {
@@ -341,18 +327,8 @@ function App() {
   /** Posts new high score to DB */
   async function addEntryToDB(entry: [number, string]) {
     if (!isLoggedIn) return;
-    const body = JSON.stringify({name: entry[1], score: entry[0]});
-    const request = new Request('/api/highScores', {method: 'POST', body: body, headers: {'Content-Type': 'application/json'} })
-    await fetch(request)
-    .then((res) => res.json())
-    .then((data) => {
-      if (data.entry === 'fail') {
-        console.error('problem saving to DB');
-      } else {
-        console.log('high score added to DB');
-      }
-    })
-    .catch((e) => console.error(e));
+    const result: Record<string, string> = await addNewHighScoreToDB(entry[1], entry[0]);
+    console.log(result.entry);
   }
 
   /** Adds user's score to high score list if appropriate */
