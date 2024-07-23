@@ -2,14 +2,14 @@ vi.mock(import('../../api.ts'), async (importOriginal) => {
     const mod = await importOriginal();
     return {
         ...mod,
-        loginFetch: vi.fn((name: string, pword: string) => {
+        loginConfirmWithDB: vi.fn((name: string, pword: string) => {
             if (name === 'true' && pword === 'password') {
                 return 'success';
             } else {
                 return 'not a user'
             }
         }),
-        createNewUser: vi.fn((name: string, pword: string) => {
+        createNewUserInDB: vi.fn((name: string, pword: string) => {
             if (name === 'true' && pword === 'password') {
                 return 'saved';
             } else {

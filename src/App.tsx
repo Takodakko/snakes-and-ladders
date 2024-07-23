@@ -6,12 +6,12 @@ import Die from './components/Die';
 import HighScore from './components/HighScore';
 import InfoDialog from './components/InfoDialog';
 import MessageWindow from './components/MessageWindow';
-import boardDeterminers from './calculations/board-characteristics';
+import { decideIslandAttributes } from './calculations/board-characteristics';
 import saveRestoreDeleteGame from './calculations/save-restore-delete-game';
 import highScoreCalculations from './calculations/high-score-calculations';
 const { saveGame, restoreGame, deleteGame } = saveRestoreDeleteGame;
 const { addScoreToList, checkScoreAgainstList } = highScoreCalculations;
-import { getAllHighScores, addNewHighScoreToDB } from './api';
+import { getAllHighScoresFromDB, addNewHighScoreToDB } from './api';
 import GameOver from './components/GameOver';
 import imageList from './imageList';
 import './App.css';
@@ -212,7 +212,6 @@ function App() {
   }
 
   // --------------------- Data to save state of game -----------------------
-  const { decideIslandAttributes } = boardDeterminers;
   const [chosenIslandData, setChosenIslandData] = useState<islandAttributes>(decideIslandAttributes(2));
   
   /** Either recreates islands from saved data or creates from scratch */
@@ -301,7 +300,7 @@ function App() {
 
   useEffect(() => {
     async function fetchData() {
-      const newScores: dbHighScores[] | null = await getAllHighScores();
+      const newScores: dbHighScores[] | null = await getAllHighScoresFromDB();
       if (newScores !== null) {
         const arrayified: highScoreListType = [];
         newScores.forEach((entry: dbHighScores) => {

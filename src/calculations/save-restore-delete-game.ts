@@ -1,8 +1,9 @@
-import { IgameSaveData, islandStyleArray, islandAttributes } from "../appTypes";
+import { IgameSaveData, IdataToSaveAsJson, islandStyleArray, islandAttributes } from "../appTypes";
+import { saveGameToDB, restoreGameFromDB, deleteGameFromDB } from "../api";
 
 /** Used maps for board data to avoid forced stringifying of keys, but maps don't work well when transformed to JSON */
 function mapToObject(map: islandAttributes) {
-  const obj: Record<string, Array<any>> = {};
+  const obj: Record<string, islandStyleArray> = {};
   map.forEach((el, ind) => {
     obj[`${ind}`] = [...el];
   });
@@ -24,43 +25,32 @@ const saveRestoreDeleteGame = {
   /** Saves game to local storage and optionally to DB */
   saveGame: async (data: IgameSaveData, points: number, stamina: number, name: string, autoSave: boolean) => {
         const objectifiedIslandMap = mapToObject(data.chosenIslandData);
-        const dataToSaveAsJson = { ...data, chosenIslandData: objectifiedIslandMap, currentScore: points, currentStamina: stamina };
-        if (!autoSave) {
+        const dataToSaveAsJson: IdataToSaveAsJson = { ...data, chosenIslandData: objectifiedIslandMap, currentScore: points, currentStamina: stamina };
+        localStorage.setItem(`savedGame-${name}`, JSON.stringify(dataToSaveAsJson));
+        if (autoSave) {
           return true;
         }
-        localStorage.setItem(`savedGame-${name}`, JSON.stringify(dataToSaveAsJson));
-        const body = JSON.stringify({name: name, game: dataToSaveAsJson});
-        const request = new Request('/api/users/saveGame', {method: 'POST', body: body, headers: {'Content-Type': 'application/json'} });
-        const success = await fetch(request)
-      .then((res) => res.json())
-      .then((data) => {
-        return data;
-      })
-      .catch((e) => console.error(e));
-      if (success.result === 'game saved') {
-        return true;
-      } else {
-        window.alert('There was an issue saving. Try again.');
-        return false;
-      }
+        const success: Record<string, string> = await saveGameToDB(name, dataToSaveAsJson);
+        if (success.result === 'game saved') {
+          return true;
+        } else {
+          window.alert('There was an issue saving. Try again.');
+          return false;
+        }
   },
   /** Restore game from local storage if there, and from DB if there, otherwise returns null */
   restoreGame: async (name: string): Promise<IgameSaveData | null> => {
+    console.log(name, 'name in restoreGame');
     const localSaveData = localStorage.getItem(`savedGame-${name}`);
+    console.log(localSaveData, 'localSaveData')
     const localSaveDataJS = localSaveData !== null ? JSON.parse(localSaveData) : null;
     if (localSaveDataJS !== null) {
       const modifiedLocalSaveData = {...localSaveDataJS, chosenIslandData: objectToMap(localSaveDataJS.chosenIslandData)};
       return modifiedLocalSaveData;
     } else {
-      const url = `/api/users/getGame?name=${name}`;
-          const gameRequest = new Request(url, {method: 'GET'});
-          const dbSaveData = await fetch(gameRequest)
-          .then((res) => res.json())
-          .then((data) => {
-            return data;
-          })
-          .catch((e) => console.error(e));
-          if (dbSaveData.game) {
+      console.log(name, 'name in restoreGame');
+      const dbSaveData: {game: IdataToSaveAsJson} | null = await restoreGameFromDB(name);
+          if (dbSaveData?.game) {
             const modifiedDBSaveData = {...dbSaveData.game, chosenIslandData: objectToMap(dbSaveData.game.chosenIslandData)};
             return modifiedDBSaveData;
           } else {
@@ -71,14 +61,7 @@ const saveRestoreDeleteGame = {
   /** Deletes saved game data from both local storage and DB */
   deleteGame: async (name: string) => {
     localStorage.removeItem(`savedGame-${name}`);
-    const body = JSON.stringify({name: name});
-    const request = new Request('/api/users/deleteData', { method: 'DELETE', body: body, headers: {'Content-Type': 'application/json'} });
-    const deleted = await fetch(request)
-    .then((res) => res.json())
-    .then((data) => {
-      return data;
-    })
-    .catch((e) => console.error(e));
+    const deleted = await deleteGameFromDB(name);
     if (deleted === 'game deleted') {
       console.log('game deleted');
       return true;

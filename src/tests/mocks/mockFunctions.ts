@@ -1,4 +1,5 @@
 import { vi } from 'vitest';
+import { islandAttributes } from '../../appTypes';
 
 const mockRollDie = vi.fn((num: number) => num);
 
@@ -33,6 +34,18 @@ const mockCreateNewUser = vi.fn((name: string, pword: string) => {
     }
 });
 
+const mockMakeSquares = vi.fn((num: number, data: islandAttributes | null, score: number, stamina: number, position: number): void => {
+    console.log(num, data, stamina, score, position);
+});
+
+const mockChangePieceType = vi.fn((type: string) => {
+    console.log(type);
+});
+
+const mockChangeNumberOfSquares = vi.fn((num: number, stamina: number, points: number) => {
+    console.log(num, stamina, points);
+});
+
 const mockFunctions = {
     mockRollDie,
     mockMessageWindowClose,
@@ -42,6 +55,9 @@ const mockFunctions = {
     mockRestoreGameFromLocalOrDB,
     mockLoginFetch,
     mockCreateNewUser,
+    mockMakeSquares,
+    mockChangePieceType,
+    mockChangeNumberOfSquares,
 };
 
 export default mockFunctions;

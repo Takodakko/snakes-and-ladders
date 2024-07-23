@@ -24,6 +24,16 @@ interface IgameSaveData {
     currentStamina: number;
 };
 
+interface IdataToSaveAsJson {
+    chosenIslandData: Record<string, islandStyleArray>;
+    currentScore: number;
+    currentStamina: number;
+    chosenPieceType: string;
+    currentPlayerPosition: number;
+    numberOfSquares: number;
+    userName: string;
+};
+
 type userIsRegistered = (yes: boolean) => void;
 type rollDie = (num: number) => void;
 type handleHover = (dialogType: dialogTypes) => void;
@@ -60,4 +70,5 @@ export type {
     pieceTypes,
     makeSquares,
     dbHighScores,
+    IdataToSaveAsJson,
 }

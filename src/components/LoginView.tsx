@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import './LoginView.css';
 import { userIsRegistered, displayUserName, restoreGameFromLocalOrDB } from '../appTypes';
-import { loginFetch, createNewUser } from '../api';
+import { loginConfirmWithDB, createNewUserInDB } from '../api';
 
 /** Creates the view for the log in screen */
 function LoginView(props: {displayUserName: displayUserName, userIsRegistered: userIsRegistered, restoreGameFromLocalOrDB: restoreGameFromLocalOrDB}) {
@@ -39,7 +39,7 @@ function LoginView(props: {displayUserName: displayUserName, userIsRegistered: u
           return;
         }
         
-        const loggedIn = await loginFetch(name, pword);
+        const loggedIn = await loginConfirmWithDB(name, pword);
         
         if (loggedIn === 'success') {
           const savedGame = await restoreGameFromLocalOrDB(name);
@@ -70,7 +70,7 @@ function LoginView(props: {displayUserName: displayUserName, userIsRegistered: u
         return;
       }
       
-      const wasCreated = await createNewUser(name, pword);
+      const wasCreated = await createNewUserInDB(name, pword);
       if (wasCreated === 'saved') {
         userIsRegistered(true);
         displayUserName(name, true);
