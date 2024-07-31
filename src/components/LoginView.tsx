@@ -23,6 +23,10 @@ function LoginView(props: {displayUserName: displayUserName, userIsRegistered: u
     
     /** Immediately moves on if guest option chosen. Otherwise queries backend to confirm log in and to check for saved data */
     async function sendNameAndPassword(name: string, pword: string, guest: boolean) {
+      const reg = /^[a-z]+$/i;
+      const preg = /^[a-z0-9]+$/i;
+      const nameHasOnlyLetters = reg.test(name);
+      const pwordHasOnlyLettersOrNumbers = preg.test(pword);
       
       if (guest === true) {
         displayUserName(name, true);
@@ -31,7 +35,7 @@ function LoginView(props: {displayUserName: displayUserName, userIsRegistered: u
         setPassword('');
         return;
       } else {
-        if (name.length < 2 || pword.length < 8 || name === 'Guest') {
+        if (name.length < 2 || pword.length < 8 || name === 'Guest' || !nameHasOnlyLetters || !pwordHasOnlyLettersOrNumbers) {
           if (showWarning === 'red') {
             window.alert('Check your username and password to login and proceed');
           }
@@ -62,7 +66,11 @@ function LoginView(props: {displayUserName: displayUserName, userIsRegistered: u
 
     /** Queries backend and adds new user to DB if actuall new */
     async function addNameAndPassword(name: string, pword: string) {
-      if (name.length < 2 || pword.length < 8 || name === 'Guest') {
+      const reg = /^[a-z]+$/i;
+      const preg = /^[a-z0-9]+$/i;
+      const nameHasOnlyLetters = reg.test(name);
+      const pwordHasOnlyLettersOrNumbers = preg.test(pword);
+      if (name.length < 2 || pword.length < 8 || name === 'Guest' || !nameHasOnlyLetters || !pwordHasOnlyLettersOrNumbers) {
         if (showWarning === 'red') {
           window.alert('Check your username and password to login and proceed');
         }
@@ -86,7 +94,7 @@ function LoginView(props: {displayUserName: displayUserName, userIsRegistered: u
       <>
       <div>
       <div style={{color: showWarning}}>
-        <b>User name must be at least 2 characters and cannot be "Guest". Password must be at least 8.</b>
+        <b>User name must be at least 2 letters, cannot contain symbols, and cannot be "Guest". Password must be at least 8.</b>
       </div>
       <div className="login-fields">
         <label htmlFor="name">

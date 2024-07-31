@@ -35,6 +35,10 @@ function NewGameSetup(props: {changeNumberOfSquares: changeNumberOfSquares, chan
     const selectors = listOfTypeNames.map((e) => {
         return <option key={e} value={e}>{e}</option>
     });
+    const tileNumberArray = [20, 25, 30, 35, 40];
+    const tileSelectors = tileNumberArray.map((num) => {
+      return <option key={num} value={num}>{num}</option>
+    });
     
 
     function handleSubmit(e: React.FormEvent) {
@@ -59,13 +63,14 @@ function NewGameSetup(props: {changeNumberOfSquares: changeNumberOfSquares, chan
             </div>
             <form className="new-game-view" onSubmit={handleSubmit}>
               <label htmlFor={tilesInputId}>
-                How many tiles do you want? (2-50)
+                How many tiles do you want?
               </label>
-              <input aria-label="number-of-tiles" className="new-game-input" id={tilesInputId} type="number" name="numberoftilesinput" value={number < 51 && number > 0 ? number : ''} onChange={(n) => {
+              <select aria-label="number-of-tiles" className="new-game-input" id={tilesInputId} name="numberoftilesinput" value={number} onChange={(n) => {
                 setNumber(parseInt(n.target.value));
                 setPoints(0);
-                }}>
-              </input>
+              }}>
+                {tileSelectors}
+              </select>
               
               <label htmlFor={stamId}>
                 More points for less stamina?
