@@ -61,7 +61,7 @@ function NewGameSetup(props: {changeNumberOfSquares: changeNumberOfSquares, chan
               <label htmlFor={tilesInputId}>
                 How many tiles do you want? (2-50)
               </label>
-              <input className="new-game-input" id={tilesInputId} type="number" name="numberoftilesinput" value={number < 51 && number > 0 ? number : ''} onChange={(n) => {
+              <input aria-label="number-of-tiles" className="new-game-input" id={tilesInputId} type="number" name="numberoftilesinput" value={number < 51 && number > 0 ? number : ''} onChange={(n) => {
                 setNumber(parseInt(n.target.value));
                 setPoints(0);
                 }}>
@@ -72,19 +72,19 @@ function NewGameSetup(props: {changeNumberOfSquares: changeNumberOfSquares, chan
               </label>
               <div>
                 Starting points:
-              <select className="new-game-input" id={stamId} value={points} onChange={(p) => setPoints(parseInt(p.target.value))}>
+              <select aria-label="number-of-points" className="new-game-input" id={stamId} value={points} onChange={(p) => setPoints(parseInt(p.target.value))}>
                 {startingPointOptions}
               </select>
               </div>
               <div>
                 Starting Stamina: 
-              <input className="new-game-input" disabled={true} value={staminaResult}></input>
+              <input aria-label="number-of-stamina" className="new-game-input" disabled={true} value={staminaResult}></input>
               </div>
 
               <label htmlFor={pieceTypeId}>
                 What type of ship will you use?
               </label>
-              <select className="new-game-input" id={pieceTypeId} value={currentPieceType} onChange={(t) => setCurrentPieceType(t.target.value)}>
+              <select aria-label="type-of-ship" className="new-game-input" id={pieceTypeId} value={currentPieceType} onChange={(t) => setCurrentPieceType(t.target.value)}>
                 {selectors}
               </select>
               <button onSubmit={handleSubmit}>

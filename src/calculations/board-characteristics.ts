@@ -2,7 +2,7 @@
 import { islandAttributes, treasureTrapTypes } from "../appTypes";
 
 /** Calculates appearance determining attributes for randomly generated board */
-function decideIslandAttributes(numberOfSquares: number) {
+export function decideIslandAttributes(numberOfSquares: number) {
     function getRandomNumber(num: number) {
         return Math.floor(Math.random() * num);
       };
@@ -34,9 +34,3 @@ const treasureTrapDetails: treasureTrapTypes[] = [
   'nothing',
   'nothing',
 ];
-
-const boardDeterminers = {
-  decideIslandAttributes,
-};
-
-export default boardDeterminers

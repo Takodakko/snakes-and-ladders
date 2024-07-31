@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import './LoginView.css';
 import { userIsRegistered, displayUserName, restoreGameFromLocalOrDB } from '../appTypes';
+import { loginConfirmWithDB, createNewUserInDB } from '../api';
 
 /** Creates the view for the log in screen */
 function LoginView(props: {displayUserName: displayUserName, userIsRegistered: userIsRegistered, restoreGameFromLocalOrDB: restoreGameFromLocalOrDB}) {
@@ -22,6 +23,7 @@ function LoginView(props: {displayUserName: displayUserName, userIsRegistered: u
     
     /** Immediately moves on if guest option chosen. Otherwise queries backend to confirm log in and to check for saved data */
     async function sendNameAndPassword(name: string, pword: string, guest: boolean) {
+      
       if (guest === true) {
         displayUserName(name, true);
         userIsRegistered(false);
@@ -36,15 +38,9 @@ function LoginView(props: {displayUserName: displayUserName, userIsRegistered: u
           setShowWarning('red');
           return;
         }
-        const body = JSON.stringify({name: name, password: pword});
-        const request = new Request('/api/users/login', {method: 'POST', body: body, headers: {'Content-Type': 'application/json'} })
-        const loggedIn = await fetch(request)
-        .then((res) => res.json())
-        .then((data) => {
-          return data;
-        })
-        .catch((e) => console.error(e));
-
+        
+        const loggedIn = await loginConfirmWithDB(name, pword);
+        
         if (loggedIn === 'success') {
           const savedGame = await restoreGameFromLocalOrDB(name);
           if (savedGame) {
@@ -73,18 +69,8 @@ function LoginView(props: {displayUserName: displayUserName, userIsRegistered: u
         setShowWarning('red');
         return;
       }
-      const newUser = JSON.stringify({ name: name, password: pword });
-      const request = new Request('/api/users/create', {method: 'POST', body: newUser, headers: {'Content-Type': 'application/json'} });
-      const wasCreated = await fetch(request)
-      .then((res) => res.json())
-      .then((data) => {
-        if (data === 'saved') {
-          return data;
-        } else {
-          return 'not saved'
-        }
-      })
-      .catch((e) => console.error(e));
+      
+      const wasCreated = await createNewUserInDB(name, pword);
       if (wasCreated === 'saved') {
         userIsRegistered(true);
         displayUserName(name, true);
@@ -106,7 +92,7 @@ function LoginView(props: {displayUserName: displayUserName, userIsRegistered: u
         <label htmlFor="name">
           User Name: 
         </label>
-        <input id="name" type="text" required minLength={2} value={name} onKeyDown={enterSubmit} onChange={(c) => {
+        <input aria-label="name" id="name" type="text" required minLength={2} value={name} onKeyDown={enterSubmit} onChange={(c) => {
           setShowWarning('black');
           setName(c.target.value);
           }}>
@@ -114,7 +100,7 @@ function LoginView(props: {displayUserName: displayUserName, userIsRegistered: u
         <label htmlFor="password">
           Password: 
         </label>
-        <input id="password" type="password" required minLength={8} value={password} onKeyDown={enterSubmit} onChange={(c) => {
+        <input aria-label="password" id="password" type="password" required minLength={8} value={password} onKeyDown={enterSubmit} onChange={(c) => {
           setShowWarning('black');
           setPassword(c.target.value);
           }}>
