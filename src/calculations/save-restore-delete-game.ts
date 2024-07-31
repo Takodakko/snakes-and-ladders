@@ -40,15 +40,12 @@ const saveRestoreDeleteGame = {
   },
   /** Restore game from local storage if there, and from DB if there, otherwise returns null */
   restoreGame: async (name: string): Promise<IgameSaveData | null> => {
-    console.log(name, 'name in restoreGame');
     const localSaveData = localStorage.getItem(`savedGame-${name}`);
-    console.log(localSaveData, 'localSaveData')
     const localSaveDataJS = localSaveData !== null ? JSON.parse(localSaveData) : null;
     if (localSaveDataJS !== null) {
       const modifiedLocalSaveData = {...localSaveDataJS, chosenIslandData: objectToMap(localSaveDataJS.chosenIslandData)};
       return modifiedLocalSaveData;
     } else {
-      console.log(name, 'name in restoreGame');
       const dbSaveData: {game: IdataToSaveAsJson} | null = await restoreGameFromDB(name);
           if (dbSaveData?.game) {
             const modifiedDBSaveData = {...dbSaveData.game, chosenIslandData: objectToMap(dbSaveData.game.chosenIslandData)};
