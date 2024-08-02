@@ -30,8 +30,17 @@ function NewGameSetup(props: {changeNumberOfSquares: changeNumberOfSquares, chan
     const stamId = useId();
 
 
-    const [currentPieceType, setCurrentPieceType] = useState('sail');
+    const [currentPieceType, setCurrentPieceType] = useState<pieceTypes>('sail');
     const listOfTypeNames: pieceTypes[] = ['sail', 'cargo'];
+    function setPieceTypeHandler(pt: string) {
+      const type = listOfTypeNames.findIndex((t) => pt === t);
+      if (type === -1) {
+        return;
+      } else {
+        setCurrentPieceType(listOfTypeNames[type]);
+      }
+    };
+    
     const selectors = listOfTypeNames.map((e) => {
         return <option key={e} value={e}>{e}</option>
     });
@@ -89,7 +98,7 @@ function NewGameSetup(props: {changeNumberOfSquares: changeNumberOfSquares, chan
               <label htmlFor={pieceTypeId}>
                 What type of ship will you use?
               </label>
-              <select aria-label="type-of-ship" className="new-game-input" id={pieceTypeId} value={currentPieceType} onChange={(t) => setCurrentPieceType(t.target.value)}>
+              <select aria-label="type-of-ship" className="new-game-input" id={pieceTypeId} value={currentPieceType} onChange={(t) => setPieceTypeHandler(t.target.value)}>
                 {selectors}
               </select>
               <button onSubmit={handleSubmit}>

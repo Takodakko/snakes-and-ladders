@@ -1,0 +1,8 @@
+.message-window {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    justify-items: center;
+    align-content: center;
+    width: 70%;
+}

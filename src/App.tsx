@@ -6,11 +6,13 @@ import Die from './components/Die';
 import HighScore from './components/HighScore';
 import InfoDialog from './components/InfoDialog';
 import MessageWindow from './components/MessageWindow';
+import BattleView from './components/BattleView';
 import { decideIslandAttributes, treasureTypeDictionary } from './calculations/board-characteristics';
 import saveRestoreDeleteGame from './calculations/save-restore-delete-game';
 import highScoreCalculations from './calculations/high-score-calculations';
+// import { makeNewEnemy } from './calculations/battle-calculations';
 const { saveGame, restoreGame, deleteGame } = saveRestoreDeleteGame;
-const { addScoreToList, checkScoreAgainstList } = highScoreCalculations;
+const { addScoreToList, checkScoreAgainstList, fakeList } = highScoreCalculations;
 import { getAllHighScoresFromDB, addNewHighScoreToDB } from './api';
 import GameOver from './components/GameOver';
 import imageList from './imageList';
@@ -34,6 +36,8 @@ import {
   handleHover,
   rollDie,
   dbHighScores,
+  changeStaminaFromAttack,
+  endBattle,
 } from './appTypes';
 
 function App() {
@@ -67,12 +71,14 @@ function App() {
     setShowHighScores(false);
     setNewScoreIndex(-1);
     setDataToSave(null);
+    setInBattle(false);
   }
 
   /** Sets user name to show on screen, and either starts game from save or moves to set up step if no save */
   const displayUserName: displayUserName = (name: string, hasSetup: boolean) => {
     setUserName(name);
     setGameState(hasSetup ? 'newGame' : 'playingGame');
+    setInBattle(false);
   };
 
   const newGameButtonClass = gameState === 'finishedGame' ? 'new-game-pulse' : '';
@@ -86,12 +92,13 @@ function App() {
     setCurrentStamina(stamina);
     setCurrentScore(points);
     setGameState('playingGame');
+    setInBattle(false);
   };
   
 
   const [chosenPieceType, setChosenPieceType] = useState<pieceTypes>('sail');
 
-  const changePieceType: changePieceType = (type: string) => {
+  const changePieceType: changePieceType = (type: pieceTypes) => {
     if (type !== 'sail' && type !== 'cargo') {
       return;
     }
@@ -107,6 +114,7 @@ function App() {
   const [showMessage, setShowMessage] = useState(false);
   const queryMessage: queryMessageType = ['query', 0, "Do you wish to explore for -1 stamina? There are sometimes risks, but sometimes rewards..."];
   const [messageContent, setMessageContent] = useState<queryMessageType>([...queryMessage]);
+  const [inBattle, setInBattle] = useState(false);
 
   const rollDie: rollDie = (num: number) => {
     setNumberOnDie(num);
@@ -129,14 +137,51 @@ function App() {
   };
 
   /** Progresses window to next step, either closing it, or changing text if player explores */
-  const messageWindowClose: messageWindowClose = (onlyClose: boolean) => {
+  const messageWindowClose: messageWindowClose = (onlyClose: boolean, battle: boolean) => {
     if (onlyClose) {
-      setShowMessage(false);
-      autoSaveGameData(currentScore, currentStamina);
+      if (!battle) {
+        setShowMessage(false);
+        autoSaveGameData(currentScore, currentStamina);
+      } else {
+        enterBattle();
+        setShowMessage(false);
+      }
     } else {
-      exploreIsland();
+        exploreIsland();
     }
   };
+
+  function enterBattle() {
+    setInBattle(true);
+    // const newEnemy = makeNewEnemy();
+    // setCurrentEnemy({...newEnemy});
+  };
+
+  /** Changes stamina if attack succeeds */
+  const changeStaminaFromAttack: changeStaminaFromAttack = (newStamina: number) => {
+    
+      setCurrentStamina(newStamina);
+    
+    // else {
+    //   setCurrentEnemy({...currentEnemy, stamina: newStamina});
+    // }
+    
+  };
+
+  /** Ends battle and set loss condition or adds to points */
+  const endBattle: endBattle = (lost: boolean, points: number) => {
+    if (lost) {
+      setGameState('finishedGame');
+      setShowMessage(false);
+    } else {
+      setInBattle(false);
+      messageWindowClose(true, false);
+      setCurrentScore(currentScore + points);
+    }
+    
+  };
+
+  // const [currentEnemy, setCurrentEnemy] = useState(makeNewEnemy);
 
   /** Moves player piece to next tile */
   const movePiece = async (num: number) => {
@@ -260,10 +305,12 @@ function App() {
       setDataToSave(gameData);
       makeSquares(gameData.numberOfSquares, gameData.chosenIslandData, gameData.currentScore, gameData.currentStamina, gameData.currentPlayerPosition);
       setGameState('playingGame');
+      setInBattle(false);
       return true;
     } else {
       setDataToSave(null);
       setGameState('newGame');
+      setInBattle(false);
       return false;
     }
   };
@@ -284,8 +331,7 @@ function App() {
 
   // --------------------- High Score --------------------
   
-  const fakeList = [[100, 'Edelgard'], [90, 'Hubert'], [85, 'Linhardt'], [70, 'Ferdinand'], [60, 'Dorothea'], [55, 'Petra'], [10, 'Bernadetta'], [-10, 'Caspar']];
-  const [highScores, setHighScores] = useState<any[]>([...fakeList]); // useEffect get list or use fake if failure
+  const [highScores, setHighScores] = useState<highScoreListType>([...fakeList]); // useEffect get list or use fake if failure
   const [showHighScores, setShowHighScores] = useState(false);
   const [newScoreIndex, setNewScoreIndex] = useState(-1);
 
@@ -341,8 +387,12 @@ function App() {
       <MessageWindow content={messageContent} messageWindowClose={messageWindowClose} currentStamina={currentStamina} pointStaminaTextColor={pointStaminaTextColor(currentStamina)}/>
     </div>
     <HighScore showHighScores={showHighScores} highScores={highScores} newScoreIndex={newScoreIndex}/>
+    
+    <div style={{display: inBattle ? 'block' : 'none'}} className="battle-view">
+      {inBattle ? <BattleView points={currentScore} stamina={currentStamina} playerShip={chosenPieceType} changeStaminaFromAttack={changeStaminaFromAttack} endBattle={endBattle} pointStaminaTextColor={pointStaminaTextColor(currentStamina)}/> : null}
+    </div>
 
-    <div className="overall-view">
+    <div style={{display: inBattle ? 'none' : 'flex'}} className="overall-view">
 
       <div style={{display: gameState === 'login' ? 'block' : 'none'}}>
           <LoginView displayUserName={displayUserName} userIsRegistered={userIsRegistered} restoreGameFromLocalOrDB={restoreGameFromLocalOrDB}/>
