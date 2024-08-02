@@ -153,24 +153,17 @@ function App() {
 
   function enterBattle() {
     setInBattle(true);
-    // const newEnemy = makeNewEnemy();
-    // setCurrentEnemy({...newEnemy});
   };
 
   /** Changes stamina if attack succeeds */
   const changeStaminaFromAttack: changeStaminaFromAttack = (newStamina: number) => {
-    
       setCurrentStamina(newStamina);
-    
-    // else {
-    //   setCurrentEnemy({...currentEnemy, stamina: newStamina});
-    // }
-    
   };
 
   /** Ends battle and set loss condition or adds to points */
   const endBattle: endBattle = (lost: boolean, points: number) => {
     if (lost) {
+      setInBattle(false);
       setGameState('finishedGame');
       setShowMessage(false);
     } else {
@@ -180,8 +173,6 @@ function App() {
     }
     
   };
-
-  // const [currentEnemy, setCurrentEnemy] = useState(makeNewEnemy);
 
   /** Moves player piece to next tile */
   const movePiece = async (num: number) => {

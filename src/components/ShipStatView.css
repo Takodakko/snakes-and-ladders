@@ -1,0 +1,53 @@
+.stat-board {
+    background-color: rgb(111, 213, 213);
+    color: black;
+    display: grid;
+    gap: 1em;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    border: solid;
+    border-color: black;
+    border-radius: 10%;
+    margin: 1em;
+    padding: 1em;
+}
+
+.title-row {
+    grid-row: 1;
+    grid-column: 2 / 3;
+    background-color: bisque;
+    border-radius: 20%;
+    padding: 1em;
+}
+
+.inactive-stat-row {
+    border: solid;
+    border-radius: 20%;
+    background-color: rgb(164, 225, 225);
+}
+
+.active-stat-row {
+    border: solid;
+    border-radius: 20%;
+    background-color: rgb(223, 182, 105);
+}
+
+.attack-row {
+    grid-row: 2 / 3;
+    grid-column: 1;
+}
+
+.stamina-row {
+    grid-row: 2 / 3;
+    grid-column: 3;
+}
+
+.speed-row {
+    grid-row: 3 / 3;
+    grid-column: 1;
+}
+
+.hit-row {
+    grid-row: 3 / 3;
+    grid-column: 3;
+}

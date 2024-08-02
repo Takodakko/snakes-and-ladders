@@ -35,6 +35,7 @@ interface IdataToSaveAsJson {
 };
 
 interface IShipStats {
+    name: string;
     stamina: number;
     attack: number;
     speed: number;
