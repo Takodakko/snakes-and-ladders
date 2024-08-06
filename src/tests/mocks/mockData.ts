@@ -1,4 +1,4 @@
-import { dialogTypes, queryMessageType, treasureTrapObject, highScoreListType } from '../../appTypes';
+import { dialogTypes, queryMessageType, treasureTrapObject, highScoreListType, IShipStats } from '../../appTypes';
 
 const mockMessages: Record<dialogTypes, string> = {
     points: 'Collect points from islands. You lose 1 point for each turn. Some islands have traps that make you lose points.',
@@ -15,15 +15,32 @@ const mockMessages: Record<dialogTypes, string> = {
     'snake': ['snake', -5, "The island has many venomous snakes. You found that out when almost half your crew got bitten by them."],
     'fruit': ['fruit', 15, "The island is filled with trees growing a delicious fruit! You load your ship up with it."],
     'nothing': ['nothing', 0, "The island was quiet and empty. You explore a little, but there doesn't seem to be anything interesting here."],
+    'enemy': ['enemy', 0, "The island was inhabited by pirates!"],
   };
 
   const mockHighScoreList: highScoreListType = [[100, 'Edelgard'], [90, 'Hubert'], [85, 'Linhardt'], [70, 'Ferdinand'], [60, 'Dorothea'], [55, 'Petra'], [10, 'Bernadetta'], [-10, 'Caspar']];
+
+  const mockShipAllTen: IShipStats = {
+    name: 'ten',
+    attack: 10,
+    stamina: 10,
+    speed: 10,
+  };
+
+  const mockShipAllFive: IShipStats = {
+    name: 'five',
+    attack: 5,
+    stamina: 5,
+    speed: 5,
+  };
 
   const mockData = {
     mockMessages,
     mockQueryMessage,
     mockTreasureTypeDictionary,
     mockHighScoreList,
+    mockShipAllTen,
+    mockShipAllFive
   };
 
   export default mockData;

@@ -46,6 +46,10 @@ const mockChangeNumberOfSquares = vi.fn((num: number, stamina: number, points: n
     console.log(num, stamina, points);
 });
 
+const mockChangeStaminaFromAttack = vi.fn();
+
+const mockEndBattle = vi.fn();
+
 const mockFunctions = {
     mockRollDie,
     mockMessageWindowClose,
@@ -58,6 +62,8 @@ const mockFunctions = {
     mockMakeSquares,
     mockChangePieceType,
     mockChangeNumberOfSquares,
+    mockChangeStaminaFromAttack,
+    mockEndBattle,
 };
 
 export default mockFunctions;

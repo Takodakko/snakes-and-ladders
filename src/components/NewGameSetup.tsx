@@ -24,48 +24,50 @@ function NewGameSetup(props: {changeNumberOfSquares: changeNumberOfSquares, chan
       return options;
     }, [points, number]);
 
-    const [tileNumberWarning, setTileNumberWarning] = useState(false);
     const tilesInputId = useId();
     const pieceTypeId = useId();
     const stamId = useId();
 
 
-    const [currentPieceType, setCurrentPieceType] = useState('sail');
+    const [currentPieceType, setCurrentPieceType] = useState<pieceTypes>('sail');
     const listOfTypeNames: pieceTypes[] = ['sail', 'cargo'];
+    function setPieceTypeHandler(pt: string) {
+      const type = listOfTypeNames.findIndex((t) => pt === t);
+      if (type === -1) {
+        return;
+      } else {
+        setCurrentPieceType(listOfTypeNames[type]);
+      }
+    };
+    
     const selectors = listOfTypeNames.map((e) => {
         return <option key={e} value={e}>{e}</option>
+    });
+    const tileNumberArray = [20, 25, 30, 35, 40];
+    const tileSelectors = tileNumberArray.map((num) => {
+      return <option key={num} value={num}>{num}</option>
     });
     
 
     function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
-        setTileNumberWarning(false);
-        if (number > 1 && number < 51) {
-            changeNumberOfSquares(number, staminaResult, points);
-            changePieceType(currentPieceType);
-            makeSquares(number, null, points, staminaResult, 1);
-        } else {
-            setTileNumberWarning(true);
-            setTimeout(() => {
-                setTileNumberWarning(false);
-            }, 1500);
-        }
-    }
+        changeNumberOfSquares(number, staminaResult, points);
+        changePieceType(currentPieceType);
+        makeSquares(number, null, points, staminaResult, 1);
+    };
 
     return (
         <div>
-            <div style={{display: tileNumberWarning ? 'block' : 'none', color: 'red'}}>
-                Enter a number between 2 and 50
-            </div>
             <form className="new-game-view" onSubmit={handleSubmit}>
               <label htmlFor={tilesInputId}>
-                How many tiles do you want? (2-50)
+                How many tiles do you want?
               </label>
-              <input aria-label="number-of-tiles" className="new-game-input" id={tilesInputId} type="number" name="numberoftilesinput" value={number < 51 && number > 0 ? number : ''} onChange={(n) => {
+              <select aria-label="number-of-tiles" className="new-game-input" id={tilesInputId} name="numberoftilesinput" value={number} onChange={(n) => {
                 setNumber(parseInt(n.target.value));
                 setPoints(0);
-                }}>
-              </input>
+              }}>
+                {tileSelectors}
+              </select>
               
               <label htmlFor={stamId}>
                 More points for less stamina?
@@ -84,7 +86,7 @@ function NewGameSetup(props: {changeNumberOfSquares: changeNumberOfSquares, chan
               <label htmlFor={pieceTypeId}>
                 What type of ship will you use?
               </label>
-              <select aria-label="type-of-ship" className="new-game-input" id={pieceTypeId} value={currentPieceType} onChange={(t) => setCurrentPieceType(t.target.value)}>
+              <select aria-label="type-of-ship" className="new-game-input" id={pieceTypeId} value={currentPieceType} onChange={(t) => setPieceTypeHandler(t.target.value)}>
                 {selectors}
               </select>
               <button onSubmit={handleSubmit}>
