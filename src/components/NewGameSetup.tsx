@@ -24,7 +24,6 @@ function NewGameSetup(props: {changeNumberOfSquares: changeNumberOfSquares, chan
       return options;
     }, [points, number]);
 
-    const [tileNumberWarning, setTileNumberWarning] = useState(false);
     const tilesInputId = useId();
     const pieceTypeId = useId();
     const stamId = useId();
@@ -52,24 +51,13 @@ function NewGameSetup(props: {changeNumberOfSquares: changeNumberOfSquares, chan
 
     function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
-        setTileNumberWarning(false);
-        if (number > 1 && number < 51) {
-            changeNumberOfSquares(number, staminaResult, points);
-            changePieceType(currentPieceType);
-            makeSquares(number, null, points, staminaResult, 1);
-        } else {
-            setTileNumberWarning(true);
-            setTimeout(() => {
-                setTileNumberWarning(false);
-            }, 1500);
-        }
-    }
+        changeNumberOfSquares(number, staminaResult, points);
+        changePieceType(currentPieceType);
+        makeSquares(number, null, points, staminaResult, 1);
+    };
 
     return (
         <div>
-            <div style={{display: tileNumberWarning ? 'block' : 'none', color: 'red'}}>
-                Enter a number between 2 and 50
-            </div>
             <form className="new-game-view" onSubmit={handleSubmit}>
               <label htmlFor={tilesInputId}>
                 How many tiles do you want?

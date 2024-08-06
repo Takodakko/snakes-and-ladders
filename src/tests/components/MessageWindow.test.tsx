@@ -51,14 +51,29 @@ describe('Message Window Component', () => {
         const { queryAllByRole, getByRole, rerender } = render(<MessageWindow messageWindowClose={mockMessageWindowClose} currentStamina={2} pointStaminaTextColor="red" content={mockQueryMessage}/>);
         const [button1, button2] = queryAllByRole('button');
         await user.click(button1);
-        expect(mockMessageWindowClose).toHaveBeenCalledWith(true);
+        expect(mockMessageWindowClose).toHaveBeenCalledWith(true, false);
         await user.click(button2);
-        expect(mockMessageWindowClose).toHaveBeenLastCalledWith(false);
+        expect(mockMessageWindowClose).toHaveBeenLastCalledWith(false, false);
         expect(mockMessageWindowClose).toHaveBeenCalledTimes(2);
         rerender(<MessageWindow messageWindowClose={mockMessageWindowClose} currentStamina={2} pointStaminaTextColor="red" content={mockTreasureTypeDictionary.chest}/>);
         const onlyButton = getByRole('button');
         await user.click(onlyButton);
-        expect(mockMessageWindowClose).toHaveBeenLastCalledWith(true);
+        expect(mockMessageWindowClose).toHaveBeenLastCalledWith(true, false);
         expect(mockMessageWindowClose).toHaveBeenCalledTimes(3);
+    });
+
+    test('has a unique setup for the "enemy" type message', async () => {
+        const user = userEvent.setup();
+        const { getByRole, queryByText } = render(<MessageWindow messageWindowClose={mockMessageWindowClose} currentStamina={2} pointStaminaTextColor="red" content={mockTreasureTypeDictionary.enemy}/>);
+        const button = getByRole('button');
+        const buttonText = queryByText('Uh-oh!');
+        const otherButtonText = queryByText('Ok');
+
+        expect(buttonText).toBeTruthy();
+        expect(otherButtonText).toBeNull();
+        
+        await user.click(button);
+
+        expect(mockMessageWindowClose).toHaveBeenCalledWith(true, true);
     });
 });

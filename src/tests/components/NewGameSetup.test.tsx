@@ -25,42 +25,7 @@ describe('NewGameSetup component', () => {
         expect(button?.textContent).toBe('Start Game');
     });
 
-    test('it starts with invisible text explaining the parameters for number of squares', () => {
-        const { queryByText } = render(<NewGameSetup changeNumberOfSquares={mockChangeNumberOfSquares} changePieceType={mockChangePieceType} makeSquares={mockMakeSquares}/>);
-        const text = queryByText('Enter a number between 2 and 50');
-        expect(text).toBeTruthy();
-        expect(text?.style.display).toBe('none');
-    });
-
-    test('shows text if number of squares filled in by user is too few', async () => {
-        const user = userEvent.setup();
-        const { queryByText, getByLabelText, getByRole } = render(<NewGameSetup changeNumberOfSquares={mockChangeNumberOfSquares} changePieceType={mockChangePieceType} makeSquares={mockMakeSquares}/>);
-        const text = queryByText('Enter a number between 2 and 50');
-        expect(text?.style.display).toBe('none');
-
-        await user.click(getByLabelText('number-of-tiles'));
-        await user.keyboard('1');
-        await user.click(getByRole('button'));
-
-        expect(text?.style.color).toBe('red');
-        expect(text?.style.display).toBe('block');
-    });
-
-    test('shows text if number of squares filled in by user is too many', async () => {
-        const user = userEvent.setup();
-        const { queryByText, getByLabelText, getByRole } = render(<NewGameSetup changeNumberOfSquares={mockChangeNumberOfSquares} changePieceType={mockChangePieceType} makeSquares={mockMakeSquares}/>);
-        const text = queryByText('Enter a number between 2 and 50');
-        expect(text?.style.display).toBe('none');
-
-        await user.click(getByLabelText('number-of-tiles'));
-        await user.keyboard('1000');
-        await user.click(getByRole('button'));
-
-        expect(text?.style.color).toBe('red');
-        expect(text?.style.display).toBe('block');
-    });
-
-    test('sets number of points to zero by default and only has options up to 1 less than the number of squares', async () => {
+    test('sets number of points to zero by default and only has number of tile options that are multiples of 5 from 20 to 40', async () => {
         const user = userEvent.setup();
         const { getByDisplayValue } = render(<NewGameSetup changeNumberOfSquares={mockChangeNumberOfSquares} changePieceType={mockChangePieceType} makeSquares={mockMakeSquares}/>);
         const pointSelector = getByDisplayValue('0');
@@ -71,8 +36,7 @@ describe('NewGameSetup component', () => {
         const children = pointSelector.childElementCount;
         expect(children).toBe(24);
 
-        await user.clear(numberOfSquaresSelector);
-        await user.keyboard('20');
+        await user.selectOptions(numberOfSquaresSelector, '20');
         vi.runAllTicks();
 
         const newChildren = pointSelector.childElementCount;

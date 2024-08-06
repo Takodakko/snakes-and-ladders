@@ -65,9 +65,8 @@ export function calculateHitPercent(attacker: IShipStats, defender: IShipStats) 
 export function calculateDamage(attacker: IShipStats, defender: IShipStats) {
   const hitPercent = calculateHitPercent(attacker, defender);
   const seed = getRandomNumber(100);
-  console.log(attacker.attack, 'attack', defender.stamina, 'stamina');
   //return attacker.attack;
-  if (hitPercent > seed) {
+  if (hitPercent >= seed) {
     return attacker.attack;
   } else {
     return 0;

@@ -86,7 +86,7 @@ function BattleView(props: {points: number, stamina: number, playerShip: pieceTy
     
     return (
         <>
-          {showBattleResults ? <div className="message-window-container" style={{display: 'flex'}}>{resultsDisplay}</div> : null}
+          {showBattleResults ? <div className="message-window-container" style={{display: 'flex'}} data-testid="battle-results-window">{resultsDisplay}</div> : null}
           {!showBattleResults ? 
           <div>
             <ShipStatView name={localPlayerObject.name} attack={localPlayerObject.attack} stamina={currentStamina} speed={localPlayerObject.speed} hit={playerHit} activeRow={activeRowPlayer}/>

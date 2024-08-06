@@ -11,7 +11,7 @@ function ShipStatView(props: {name: string, attack: number, stamina: number, spe
     };
 
     return (
-        <div className="stat-board">
+        <div className="stat-board" data-testid="ship-stats">
             <div className="title-row"><b>{name}</b></div>
             <div className={rowActiveOrNot("attack-row")}>Attack: <b>{attack}</b></div>
             <div className={rowActiveOrNot("stamina-row")}>Stamina: <b>{stamina}</b></div>
