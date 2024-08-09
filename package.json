@@ -9,7 +9,8 @@
     "build:client": "vite build --ssrManifest --outDir dist/client",
     "build:server": "vite build --ssr src/entry-server.tsx --outDir dist/server",
     "preview": "cross-env NODE_ENV=production node server",
-    "test": "vitest"
+    "test": "vitest",
+    "test:cover": "vitest --coverage.enabled --ui"
   },
   "dependencies": {
     "@testing-library/user-event": "^14.5.2",
@@ -29,6 +30,8 @@
     "@types/react": "^18.2.79",
     "@types/react-dom": "^18.2.25",
     "@vitejs/plugin-react": "^4.2.1",
+    "@vitest/coverage-v8": "^2.0.5",
+    "@vitest/ui": "^2.0.5",
     "cross-env": "^7.0.3",
     "jsdom": "^24.1.1",
     "typescript": "^5.4.5",

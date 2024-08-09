@@ -50,6 +50,11 @@ function Die(props: {dots: number, rollDie: rollDie, canRollDie: boolean}) {
     const [dieFaceClass, setDieFaceClass] = useState('die-face');
 
     function rolling() {
+      
+      if (dieRolling) {
+        console.log('should not roll')
+        return;
+      }
       setDieFaceClass('die-face rolling-die');
       setDieRolling(true);
       setTimeout(() => {
@@ -61,7 +66,7 @@ function Die(props: {dots: number, rollDie: rollDie, canRollDie: boolean}) {
 
   return (
     <>
-      <div data-testid="die" className={dieFaceClass} style={{backgroundColor: canRollDie ? 'white' : 'gray'}} onClick={() => canRollDie ? rolling() : {}}>
+      <div data-testid="die" className={dieFaceClass} style={{backgroundColor: canRollDie ? 'white' : 'gray'}} onClick={() => canRollDie && !dieRolling ? rolling() : {}}>
         {faceDots}
       </div>
       <div style={{color: '#63c4e2', opacity: canRollDie ? 100 : 0}}>

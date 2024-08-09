@@ -39,6 +39,7 @@ interface IShipStats {
     stamina: number;
     attack: number;
     speed: number;
+    guts: number;
 }
 
 type userIsRegistered = (yes: boolean) => void;
