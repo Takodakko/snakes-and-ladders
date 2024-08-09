@@ -2,7 +2,7 @@ vi.mock(import('../../calculations/battle-calculations'), async (importOriginal)
     const mod = await importOriginal();
     return {
         ...mod,
-        calculateDamage: vi.fn(() => 0)
+        calculateDamage: vi.fn(() => [0, 'Miss!'])
     }
 });
 import { render, within } from '@testing-library/react';
@@ -26,7 +26,7 @@ describe('BattleView component', () => {
     });
 
     test('Displays stats for player ship and randomly generated enemy', () => {
-        const { queryByText, queryAllByTestId } = render(<BattleView points={11} stamina={11} playerShip={'sail'} changeStaminaFromAttack={mockChangeStaminaFromAttack} endBattle={mockEndBattle} pointStaminaTextColor={'black'}/>);
+        const { queryByText, queryAllByTestId } = render(<BattleView stamina={11} playerShip={'sail'} changeStaminaFromAttack={mockChangeStaminaFromAttack} endBattle={mockEndBattle} pointStaminaTextColor={'black'}/>);
         const playerShip = queryByText('Your Ship');
         expect(playerShip).toBeTruthy();
         const ships = queryAllByTestId('ship-stats');
@@ -41,13 +41,14 @@ describe('BattleView component', () => {
 
     test('Button starts with "Attack" and changes to "Defend" after click', async () => {
         const user = userEvent.setup();
-        const { getByRole } = render(<BattleView points={11} stamina={11} playerShip={'sail'} changeStaminaFromAttack={mockChangeStaminaFromAttack} endBattle={mockEndBattle} pointStaminaTextColor={'black'}/>);
+        const { getByRole } = render(<BattleView stamina={11} playerShip={'sail'} changeStaminaFromAttack={mockChangeStaminaFromAttack} endBattle={mockEndBattle} pointStaminaTextColor={'black'}/>);
         const button = getByRole('button');
         const buttonText = within(button).getByText('Attack!');
         expect(buttonText).toBeTruthy();
 
         await user.click(button);
         vi.runAllTicks();
+        vi.runAllTimers();
 
         const newButtonText = within(button).getByText('Defend!');
         expect(newButtonText).toBeTruthy();
@@ -55,19 +56,30 @@ describe('BattleView component', () => {
 
         await user.click(button);
         vi.runAllTicks();
+        vi.runAllTimers();
 
         expect(mockChangeStaminaFromAttack).toHaveBeenCalled();
     });
 
     test('Displays Results Window after cycle of battle with button to close window and continue', async () => {
         const user = userEvent.setup();
-        const { getByRole, queryByTestId, getByText } = render(<BattleView points={11} stamina={11} playerShip={'sail'} changeStaminaFromAttack={mockChangeStaminaFromAttack} endBattle={mockEndBattle} pointStaminaTextColor={'black'}/>);
+        const { getByRole, queryByTestId, getByText } = render(<BattleView stamina={11} playerShip={'sail'} changeStaminaFromAttack={mockChangeStaminaFromAttack} endBattle={mockEndBattle} pointStaminaTextColor={'black'}/>);
         const button = getByRole('button');
         const resultsWindowPre = queryByTestId('battle-results-window');
         expect(resultsWindowPre).toBeNull();
 
         await user.click(button);
+        
+        vi.runAllTicks();
+        await vi.runAllTimersAsync();
+        
+        const newButtonText = within(button).getByText('Defend!');
+        expect(newButtonText).toBeTruthy();
+
         await user.click(button);
+        
+        vi.runAllTicks();
+        await vi.runAllTimersAsync();
 
         const resultsWindowPost = queryByTestId('battle-results-window');
         expect(resultsWindowPost).toBeTruthy();
@@ -76,6 +88,7 @@ describe('BattleView component', () => {
         expect(mockEndBattle).not.toHaveBeenCalled();
 
         await user.click(endButton);
+        vi.runAllTimers();
 
         expect(mockEndBattle).toHaveBeenCalled();
     });

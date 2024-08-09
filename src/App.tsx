@@ -10,7 +10,6 @@ import BattleView from './components/BattleView';
 import { decideIslandAttributes, treasureTypeDictionary } from './calculations/board-characteristics';
 import saveRestoreDeleteGame from './calculations/save-restore-delete-game';
 import highScoreCalculations from './calculations/high-score-calculations';
-// import { makeNewEnemy } from './calculations/battle-calculations';
 const { saveGame, restoreGame, deleteGame } = saveRestoreDeleteGame;
 const { addScoreToList, checkScoreAgainstList, fakeList } = highScoreCalculations;
 import { getAllHighScoresFromDB, addNewHighScoreToDB } from './api';
@@ -174,8 +173,12 @@ function App() {
     
   };
 
+  const [movingOrResting, setMovingOrResting] = useState(false);
+
   /** Moves player piece to next tile */
   const movePiece = async (num: number) => {
+    
+    setMovingOrResting(true);
     setCurrentScore(currentScore - 1);
     const newStamina = currentStamina - num;
     setCurrentStamina(currentStamina - num);
@@ -188,10 +191,12 @@ function App() {
     
     if (nextSpace >= numberOfSquares) {
       setGameState('finishedGame');
+      
       checkList(highScores, [currentScore, userName]);
       removeSavedGameData();
       setTimeout(() => {
         setShowHighScores(true);
+        setMovingOrResting(false);
       }, 3000);
     } else {
       if (newStamina <= 0) {
@@ -203,17 +208,23 @@ function App() {
       setTimeout(() => {
         setShowMessage(true);
         setCanRollDie(true);
+        setMovingOrResting(false);
       }, 500);      
     }
   };
 
   /** Performs rest action */
   function rest() {
+    
+    setMovingOrResting(true);
     const halfOfDie = Math.floor(numberOnDie / 2);
     setCurrentStamina(currentStamina + halfOfDie);
     setCurrentScore(currentScore - 1);
     setCanRollDie(true);
     autoSaveGameData(currentScore - 1, currentStamina + halfOfDie);
+    setTimeout(() => {
+      setMovingOrResting(false);
+    }, 500);
   };
 
   /** Adds to player's current score */
@@ -380,7 +391,7 @@ function App() {
     <HighScore showHighScores={showHighScores} highScores={highScores} newScoreIndex={newScoreIndex}/>
     
     <div style={{display: inBattle ? 'block' : 'none'}} className="battle-view">
-      {inBattle ? <BattleView points={currentScore} stamina={currentStamina} playerShip={chosenPieceType} changeStaminaFromAttack={changeStaminaFromAttack} endBattle={endBattle} pointStaminaTextColor={pointStaminaTextColor(currentStamina)}/> : null}
+      {inBattle ? <BattleView stamina={currentStamina} playerShip={chosenPieceType} changeStaminaFromAttack={changeStaminaFromAttack} endBattle={endBattle} pointStaminaTextColor={pointStaminaTextColor(currentStamina)}/> : null}
     </div>
 
     <div style={{display: inBattle ? 'none' : 'flex'}} className="overall-view">
@@ -427,10 +438,10 @@ function App() {
           </div>
 
           <div>
-            <button onMouseEnter={() => handleHover('move')} onMouseLeave={() => handleHover('none')} disabled={gameState === 'finishedGame' || canRollDie || showMessage} onClick={() => movePiece(numberOnDie)}>Move Forward<br></br> (- stamina)</button>
+            <button onMouseEnter={() => handleHover('move')} onMouseLeave={() => handleHover('none')} disabled={gameState === 'finishedGame' || canRollDie || showMessage || movingOrResting} onClick={() => movePiece(numberOnDie)}>Move Forward<br></br> (- stamina)</button>
             <InfoDialog handleHover={handleHover} identifier='move' hover={hover}/>
             <br></br>
-            <button onMouseEnter={() => handleHover('rest')} onMouseLeave={() => handleHover('none')} disabled={gameState === 'finishedGame' || canRollDie || showMessage} onClick={() => rest()}>Rest and recover<br></br> (+ stamina)</button>
+            <button onMouseEnter={() => handleHover('rest')} onMouseLeave={() => handleHover('none')} disabled={gameState === 'finishedGame' || canRollDie || showMessage || movingOrResting} onClick={() => rest()}>Rest and recover<br></br> (+ stamina)</button>
             <InfoDialog handleHover={handleHover} identifier='rest' hover={hover}/>
           </div>
           </div>
