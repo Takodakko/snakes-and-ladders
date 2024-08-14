@@ -403,11 +403,11 @@ function App() {
       <div className="board-side" style={{backgroundImage: `url(${imageList.waves})`, display: gameState === 'login' ? 'none' : 'block'}}>
         <GameOver gameState={gameState} hasArrived={currentPlayerPosition === numberOfSquares}/>
 
-        <div style={{display: gameState === 'newGame' ? 'block' : 'none'}}>
+        <div data-testid="new-game-view" style={{display: gameState === 'newGame' ? 'block' : 'none'}}>
           <NewGameSetup changeNumberOfSquares={changeNumberOfSquares} changePieceType={changePieceType} makeSquares={makeSquares}/>
         </div>
 
-        <div className="card" style={{display: gameState === 'playingGame' || gameState === 'finishedGame' ? 'block' : 'none'}}>
+        <div data-testid="game-board" className="card" style={{display: gameState === 'playingGame' || gameState === 'finishedGame' ? 'block' : 'none'}}>
           <Board numberOfSquares={numberOfSquares} pieceType={chosenPieceType} playerPosition={currentPlayerPosition} chosenIslandData={chosenIslandData}/>
         </div>
       </div>
