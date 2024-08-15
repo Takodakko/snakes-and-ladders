@@ -438,10 +438,10 @@ function App() {
           </div>
 
           <div>
-            <button onMouseEnter={() => handleHover('move')} onMouseLeave={() => handleHover('none')} disabled={gameState === 'finishedGame' || canRollDie || showMessage || movingOrResting} onClick={() => movePiece(numberOnDie)}>Move Forward<br></br> (- stamina)</button>
+            <button data-testid="move-button" onMouseEnter={() => handleHover('move')} onMouseLeave={() => handleHover('none')} disabled={gameState === 'finishedGame' || canRollDie || showMessage || movingOrResting} onClick={() => movePiece(numberOnDie)}>Move Forward<br></br> (- stamina)</button>
             <InfoDialog handleHover={handleHover} identifier='move' hover={hover}/>
             <br></br>
-            <button onMouseEnter={() => handleHover('rest')} onMouseLeave={() => handleHover('none')} disabled={gameState === 'finishedGame' || canRollDie || showMessage || movingOrResting} onClick={() => rest()}>Rest and recover<br></br> (+ stamina)</button>
+            <button data-testid="rest-button" onMouseEnter={() => handleHover('rest')} onMouseLeave={() => handleHover('none')} disabled={gameState === 'finishedGame' || canRollDie || showMessage || movingOrResting} onClick={() => rest()}>Rest and recover<br></br> (+ stamina)</button>
             <InfoDialog handleHover={handleHover} identifier='rest' hover={hover}/>
           </div>
           </div>

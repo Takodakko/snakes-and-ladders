@@ -26,9 +26,6 @@ import App from '../App';
 import { render, within } from '@testing-library/react';
 import { describe, expect, test, vi, beforeEach, afterEach } from 'vitest';
 import userEvent from '@testing-library/user-event';
-import mockData from './mocks/mockData';
-import { query } from 'express';
-const { mockHighScoreList } = mockData;
 
 describe('App component', () => {
 
@@ -78,7 +75,7 @@ describe('App component', () => {
 
     test('moves to game board view after login and then game setup', async () => {
         const user = userEvent.setup();
-        const { getByTestId, getByText, getByRole, getByLabelText, queryByDisplayValue, getAllByAltText } = render(<App />);
+        const { getByTestId, getByText, getAllByAltText } = render(<App />);
         const guestLogin = getByText('Sign in as guest');
         const gameBoardNotYet = getByTestId('game-board');
 
@@ -101,5 +98,58 @@ describe('App component', () => {
         for (let i = 0; i < 24; i++) {
             expect(playerPieceImages[i]?.parentElement?.style.display).toBe('none');
         }
+    });
+
+    test('allows player to roll die and move piece or rest', async () => {
+        const user = userEvent.setup();
+        const { getByTestId, getByText, rerender } = render(<App />);
+        const guestLogin = getByText('Sign in as guest');
+        
+        await user.click(guestLogin);
+        vi.runAllTicks();
+
+        const startGame = getByText('Start Game');
+        
+        await user.click(startGame);
+        vi.runAllTicks();
+        
+        const die = getByTestId('die');
+        const move = getByTestId('move-button');
+        const rest = getByTestId('rest-button');
+
+        expect(move.getAttribute('disabled')).toBe('');
+        expect(rest.getAttribute('disabled')).toBe('');
+
+        await user.click(die);
+        await vi.runAllTimersAsync();
+
+        expect(move.getAttribute('disabled')).toBe(null);
+        expect(rest.getAttribute('disabled')).toBe(null);
+
+        await user.click(move);
+        await vi.runAllTimersAsync();
+
+        expect(move.getAttribute('disabled')).toBe('');
+        expect(rest.getAttribute('disabled')).toBe('');
+
+        rerender(<App />);
+
+        await user.click(guestLogin);
+        vi.runAllTicks();
+        
+        await user.click(startGame);
+        vi.runAllTicks();
+
+        await user.click(die);
+        await vi.runAllTimersAsync();
+
+        expect(move.getAttribute('disabled')).toBe('');
+        expect(rest.getAttribute('disabled')).toBe('');
+
+        await user.click(rest);
+        await vi.runAllTimersAsync();
+
+        expect(move.getAttribute('disabled')).toBe('');
+        expect(rest.getAttribute('disabled')).toBe('');
     });
 });
