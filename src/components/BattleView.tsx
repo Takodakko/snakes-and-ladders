@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
-import { calculateDamage, makeNewEnemy, calculateHitPercent } from '../calculations/battle-calculations';
+import { battleCalculations } from '../calculations/battle-calculations';
+const { calculateDamage, makeNewEnemy, calculateHitPercent } = battleCalculations;
 import { pieceTypes, changeStaminaFromAttack, IShipStats, endBattle } from '../appTypes';
 import ShipStatView from './ShipStatView';
 import './BattleView.css';

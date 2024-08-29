@@ -1,9 +1,11 @@
 import { describe, expect, test, afterEach, beforeEach, vi } from 'vitest';
-import { render, within } from '@testing-library/react';
+import { render, within, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import NewGameSetup from '../../components/NewGameSetup';
 import mockFunctions from '../mocks/mockFunctions';
 const { mockMakeSquares, mockChangePieceType, mockChangeNumberOfSquares } = mockFunctions;
+import { pieceTypes } from '../../appTypes';
+const pieces = ['sail', 'cargo'] as pieceTypes[];
 
 describe('NewGameSetup component', () => {
 
@@ -19,7 +21,7 @@ describe('NewGameSetup component', () => {
     });
 
     test('it has a button', () => {
-        const { queryByRole } = render(<NewGameSetup changeNumberOfSquares={mockChangeNumberOfSquares} changePieceType={mockChangePieceType} makeSquares={mockMakeSquares}/>);
+        const { queryByRole } = render(<NewGameSetup changeNumberOfSquares={mockChangeNumberOfSquares} changePieceType={mockChangePieceType} makeSquares={mockMakeSquares} pieceTypeOptions={pieces}/>);
         const button = queryByRole('button');
         expect(button).toBeTruthy();
         expect(button?.textContent).toBe('Start Game');
@@ -27,7 +29,7 @@ describe('NewGameSetup component', () => {
 
     test('sets number of points to zero by default and only has number of tile options that are multiples of 5 from 20 to 40', async () => {
         const user = userEvent.setup();
-        const { getByDisplayValue } = render(<NewGameSetup changeNumberOfSquares={mockChangeNumberOfSquares} changePieceType={mockChangePieceType} makeSquares={mockMakeSquares}/>);
+        const { getByDisplayValue } = render(<NewGameSetup changeNumberOfSquares={mockChangeNumberOfSquares} changePieceType={mockChangePieceType} makeSquares={mockMakeSquares} pieceTypeOptions={pieces}/>);
         const pointSelector = getByDisplayValue('0');
         const numberOfSquaresSelector = getByDisplayValue('25');
 
@@ -45,7 +47,7 @@ describe('NewGameSetup component', () => {
 
     test('sets stamina to be inverse to points (more points -> less stamina)', async () => {
         const user = userEvent.setup();
-        const { getByDisplayValue } = render(<NewGameSetup changeNumberOfSquares={mockChangeNumberOfSquares} changePieceType={mockChangePieceType} makeSquares={mockMakeSquares}/>);
+        const { getByDisplayValue } = render(<NewGameSetup changeNumberOfSquares={mockChangeNumberOfSquares} changePieceType={mockChangePieceType} makeSquares={mockMakeSquares} pieceTypeOptions={pieces}/>);
         const pointSelector = getByDisplayValue('0');
         const staminaDisplay = getByDisplayValue('24');
         expect(staminaDisplay).toBeTruthy();
@@ -56,15 +58,38 @@ describe('NewGameSetup component', () => {
         expect(newStaminaDisplay).toBeTruthy();
     });
 
-    test('allows user to choose ship type', () => {
-        const { getByLabelText } = render(<NewGameSetup changeNumberOfSquares={mockChangeNumberOfSquares} changePieceType={mockChangePieceType} makeSquares={mockMakeSquares}/>);
+    test('allows user to choose ship type', async () => {
+        const user = userEvent.setup();
+        const { getByLabelText } = render(<NewGameSetup changeNumberOfSquares={mockChangeNumberOfSquares} changePieceType={mockChangePieceType} makeSquares={mockMakeSquares} pieceTypeOptions={pieces}/>);
         const shipSelect = getByLabelText('type-of-ship');
-        const sail = within(shipSelect).getByText('sail');
+        const sail = within(shipSelect).getByText('sail *');
         const cargo = within(shipSelect).getByText('cargo');
         
-        expect(shipSelect.textContent).toBe('sailcargo');
+        expect(shipSelect.textContent).toBe('sail *cargo ');
         expect(shipSelect.childElementCount).toBe(2);
         expect(sail).toBeTruthy();
         expect(cargo).toBeTruthy();
+
+        await user.selectOptions(shipSelect, 'cargo');
+
+        await waitFor(() => {
+            expect(screen.queryByText('cargo')).toBeNull();
+            expect(screen.queryByText('sail *')).toBeNull();
+            expect(screen.queryByText('sail')).toBeTruthy();
+            expect(screen.queryByText('cargo *')).toBeTruthy();
+        });
+    });
+
+    test('allows user to submit choices', async () => {
+        const user = userEvent.setup();
+        const { getByRole } = render(<NewGameSetup changeNumberOfSquares={mockChangeNumberOfSquares} changePieceType={mockChangePieceType} makeSquares={mockMakeSquares} pieceTypeOptions={pieces}/>);
+        const submit = getByRole('button');
+
+        await user.click(submit);
+        await waitFor(() => {
+            expect(mockChangeNumberOfSquares).toHaveBeenCalled();
+            expect(mockChangePieceType).toHaveBeenCalled();
+            expect(mockMakeSquares).toHaveBeenCalled();
+        });
     });
 });

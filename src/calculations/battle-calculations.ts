@@ -60,18 +60,19 @@ const enemyList: IShipStats[] = [
     },
 ];
 
-export function makeNewEnemy() {
+function makeNewEnemy() {
   const enemy: IShipStats = enemyList[getRandomNumberZero(enemyList.length)];
   return enemy;
 };
 
-export function calculateHitPercent(attacker: IShipStats, defender: IShipStats) {
+function calculateHitPercent(attacker: IShipStats, defender: IShipStats) {
   return 50 + ((attacker.speed - defender.speed) * 5);
 };
 
-export function calculateDamage(attacker: IShipStats, defender: IShipStats): [number, string] {
+function calculateDamage(attacker: IShipStats, defender: IShipStats): [number, string] {
   const hitPercent = calculateHitPercent(attacker, defender);
   const seed = getRandomNumber(100);
+  console.log(seed)
   const [calculatedDamage, message] = calculateGutsiness(attacker.attack, attacker.guts, defender.guts);
   if (hitPercent >= seed) {
     return [calculatedDamage, message];
@@ -80,7 +81,7 @@ export function calculateDamage(attacker: IShipStats, defender: IShipStats): [nu
   }
 };
 
-export function calculateGutsiness(rawAttack: number, attackerGuts: number, defenderGuts: number): [number, string] {
+function calculateGutsiness(rawAttack: number, attackerGuts: number, defenderGuts: number): [number, string] {
   const seed = getRandomNumberZero(100);
   const calculatedGuts = attackerGuts - defenderGuts;
   if (calculatedGuts >= seed) {
@@ -88,4 +89,14 @@ export function calculateGutsiness(rawAttack: number, attackerGuts: number, defe
   } else {
     return [rawAttack, 'A hit!'];
   }
+};
+
+export const battleCalculations = {
+  calculateGutsiness,
+  calculateDamage,
+  calculateHitPercent,
+  makeNewEnemy,
+  enemyList,
+  getRandomNumber,
+  getRandomNumberZero
 };

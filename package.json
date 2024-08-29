@@ -10,7 +10,8 @@
     "build:server": "vite build --ssr src/entry-server.tsx --outDir dist/server",
     "preview": "cross-env NODE_ENV=production node server",
     "test": "vitest",
-    "test:cover": "vitest --coverage.enabled --ui"
+    "test:cover": "vitest --coverage.enabled",
+    "test:cover:ui": "vitest --coverage.enabled --ui"
   },
   "dependencies": {
     "@testing-library/user-event": "^14.5.2",

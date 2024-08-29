@@ -3,8 +3,8 @@ import './NewGameSetup.css';
 import { changeNumberOfSquares, changePieceType, pieceTypes, makeSquares } from '../appTypes';
 
 /** Creates the view for choosing game settings before starting a new game */
-function NewGameSetup(props: {changeNumberOfSquares: changeNumberOfSquares, changePieceType: changePieceType, makeSquares: makeSquares}) {
-    const { changePieceType, changeNumberOfSquares, makeSquares } = props;
+function NewGameSetup(props: {changeNumberOfSquares: changeNumberOfSquares, changePieceType: changePieceType, makeSquares: makeSquares, pieceTypeOptions: pieceTypes[]}) {
+    const { changePieceType, changeNumberOfSquares, makeSquares, pieceTypeOptions } = props;
     const [number, setNumber] = useState(25);
     const [points, setPoints] = useState(0);
 
@@ -30,18 +30,17 @@ function NewGameSetup(props: {changeNumberOfSquares: changeNumberOfSquares, chan
 
 
     const [currentPieceType, setCurrentPieceType] = useState<pieceTypes>('sail');
-    const listOfTypeNames: pieceTypes[] = ['sail', 'cargo'];
+    const selectedShipType = useMemo(() => {
+      return currentPieceType;
+    }, [currentPieceType]);
+
     function setPieceTypeHandler(pt: string) {
-      const type = listOfTypeNames.findIndex((t) => pt === t);
-      if (type === -1) {
-        return;
-      } else {
-        setCurrentPieceType(listOfTypeNames[type]);
-      }
+      const type = pieceTypeOptions.findIndex((t) => pt === t);
+      setCurrentPieceType(pieceTypeOptions[type]);
     };
     
-    const selectors = listOfTypeNames.map((e) => {
-        return <option key={e} value={e}>{e}</option>
+    const selectors = pieceTypeOptions.map((e) => {
+        return <option key={e} value={e}>{e} {e === selectedShipType ? '*' : ''}</option>
     });
     const tileNumberArray = [20, 25, 30, 35, 40];
     const tileSelectors = tileNumberArray.map((num) => {

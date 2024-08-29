@@ -13,10 +13,10 @@ function ShipStatView(props: {name: string, attack: number, stamina: number, spe
     return (
         <div className="stat-board" data-testid="ship-stats">
             <div className="title-row"><b>{name}</b></div>
-            <div className={rowActiveOrNot("attack-row")}>Attack: <b>{attack}</b></div>
-            <div className={rowActiveOrNot("stamina-row")}>Stamina: <b>{stamina}</b></div>
-            <div className={rowActiveOrNot("speed-row")}>Speed: <b>{speed}</b></div>
-            <div className={rowActiveOrNot("hit-row")}>Hit%: <b>{hit}</b></div>
+            <div data-testid="attack-row" className={rowActiveOrNot("attack-row")}>Attack: <b>{attack}</b></div>
+            <div data-testid="stamina-row" className={rowActiveOrNot("stamina-row")}>Stamina: <b>{stamina}</b></div>
+            <div data-testid="speed-row" className={rowActiveOrNot("speed-row")}>Speed: <b>{speed}</b></div>
+            <div data-testid="hit-row" className={rowActiveOrNot("hit-row")}>Hit%: <b>{hit}</b></div>
         </div>
     )
 };

@@ -96,9 +96,10 @@ function App() {
   
 
   const [chosenPieceType, setChosenPieceType] = useState<pieceTypes>('sail');
+  const pieceTypeOptions: pieceTypes[] = ['sail', 'cargo'];
 
   const changePieceType: changePieceType = (type: pieceTypes) => {
-    if (type !== 'sail' && type !== 'cargo') {
+    if (!pieceTypeOptions.includes(type)) {
       return;
     }
     setChosenPieceType(type);
@@ -404,7 +405,7 @@ function App() {
         <GameOver gameState={gameState} hasArrived={currentPlayerPosition === numberOfSquares}/>
 
         <div data-testid="new-game-view" style={{display: gameState === 'newGame' ? 'block' : 'none'}}>
-          <NewGameSetup changeNumberOfSquares={changeNumberOfSquares} changePieceType={changePieceType} makeSquares={makeSquares}/>
+          <NewGameSetup changeNumberOfSquares={changeNumberOfSquares} changePieceType={changePieceType} makeSquares={makeSquares} pieceTypeOptions={pieceTypeOptions}/>
         </div>
 
         <div data-testid="game-board" className="card" style={{display: gameState === 'playingGame' || gameState === 'finishedGame' ? 'block' : 'none'}}>

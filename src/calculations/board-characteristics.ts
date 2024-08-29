@@ -14,7 +14,7 @@ export function decideIslandAttributes(numberOfSquares: number) {
   
     const radiusPercentsList = [30, 35, 40, 45, 50, 55, 60, 65, 70];
     const radiusPercents = () => `${radiusPercentsList[getRandomNumber(radiusPercentsList.length)]}% ${radiusPercentsList[getRandomNumber(radiusPercentsList.length)]}% ${radiusPercentsList[getRandomNumber(radiusPercentsList.length)]}% ${radiusPercentsList[getRandomNumber(radiusPercentsList.length)]}% `;
-    const randomTreasureChoices = (): treasureTrapTypes => treasureTrapDetails[Math.floor(Math.random() * treasureTrapDetails.length)];
+    const randomTreasureChoices = (): treasureTrapTypes => treasureTrapDetails[getRandomNumber(treasureTrapDetails.length)];
     const map: islandAttributes = new Map();
       for (let i = 0; i < numberOfSquares; i++) {
         map.set(i, [margin(), padding(), backgroundColor(), radiusPercents(), borderWidth(), randomTreasureChoices()]);
@@ -23,16 +23,15 @@ export function decideIslandAttributes(numberOfSquares: number) {
 };
 
 const treasureTrapDetails: treasureTrapTypes[] = [
-  // 'chest',
-  // 'chest',
-  // 'pit',
-  // 'snake',
-  // 'fruit',
-  // 'fruit',
-  // 'nothing',
-  // 'nothing',
-  // 'nothing',
-  // 'nothing',
+  'chest',
+  'chest',
+  'pit',
+  'snake',
+  'fruit',
+  'fruit',
+  'nothing',
+  'nothing',
+  'enemy',
   'enemy',
 ];
 
