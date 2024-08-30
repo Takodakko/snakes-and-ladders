@@ -25,6 +25,7 @@ const mockMessages: Record<dialogTypes, string> = {
     attack: 10,
     stamina: 10,
     speed: 10,
+    guts: 10
   };
 
   const mockShipAllFive: IShipStats = {
@@ -32,6 +33,31 @@ const mockMessages: Record<dialogTypes, string> = {
     attack: 5,
     stamina: 5,
     speed: 5,
+    guts: 5,
+  };
+
+  const mockShipTestCrit: IShipStats = {
+    name: 'testCrit',
+    attack: 5,
+    stamina: 5,
+    speed: 1000,
+    guts: 1000
+  };
+
+  const mockShipTestMiss: IShipStats = {
+    name: 'testMiss',
+    attack: 5,
+    stamina: 5,
+    speed: -100,
+    guts: 1000
+  };
+
+  const mockShipTestNormalHit: IShipStats = {
+    name: 'testCrit',
+    attack: 5,
+    stamina: 5,
+    speed: 1000,
+    guts: -100
   };
 
   const mockData = {
@@ -40,7 +66,10 @@ const mockMessages: Record<dialogTypes, string> = {
     mockTreasureTypeDictionary,
     mockHighScoreList,
     mockShipAllTen,
-    mockShipAllFive
+    mockShipAllFive,
+    mockShipTestCrit,
+    mockShipTestNormalHit,
+    mockShipTestMiss
   };
 
   export default mockData;

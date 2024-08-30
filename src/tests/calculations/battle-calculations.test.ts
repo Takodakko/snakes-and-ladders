@@ -1,8 +1,9 @@
 import { describe, expect, test } from 'vitest';
-import { makeNewEnemy, calculateHitPercent, calculateDamage } from '../../calculations/battle-calculations';
+import { battleCalculations } from '../../calculations/battle-calculations';
+const { makeNewEnemy, calculateHitPercent, calculateDamage } = battleCalculations;
 import { IShipStats } from "../../appTypes";
 import mockData from '../mocks/mockData';
-const { mockShipAllFive, mockShipAllTen } = mockData;
+const { mockShipAllFive, mockShipAllTen, mockShipTestCrit, mockShipTestMiss, mockShipTestNormalHit } = mockData;
 
 describe('battle calculation functions', () => {
     test('makeNewEnemy creates a new enemy', () => {
@@ -44,5 +45,19 @@ describe('battle calculation functions', () => {
       const impossibleResults = [7, 3, -1];
       expect(impossibleResults.includes(damage1)).toBe(false);
       expect(impossibleResults.includes(damage2)).toBe(false);
+    });
+
+    test('returns different message for hit, crtiical hit, and miss', () => {
+      const [damage1, message1] = calculateDamage(mockShipTestCrit, mockShipAllFive);
+      expect(message1).toBe('What a hit!!!!');
+      expect(damage1).toBe(10);
+
+      const [damage2, message2] = calculateDamage(mockShipTestNormalHit, mockShipAllFive);
+      expect(message2).toBe('A hit!');
+      expect(damage2).toBe(5);
+
+      const [damage3, message3] = calculateDamage(mockShipTestMiss, mockShipAllFive);
+      expect(message3).toBe('Miss!');
+      expect(damage3).toBe(0);
     });
 });

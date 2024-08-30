@@ -96,9 +96,10 @@ function App() {
   
 
   const [chosenPieceType, setChosenPieceType] = useState<pieceTypes>('sail');
+  const pieceTypeOptions: pieceTypes[] = ['sail', 'cargo'];
 
   const changePieceType: changePieceType = (type: pieceTypes) => {
-    if (type !== 'sail' && type !== 'cargo') {
+    if (!pieceTypeOptions.includes(type)) {
       return;
     }
     setChosenPieceType(type);
@@ -403,11 +404,11 @@ function App() {
       <div className="board-side" style={{backgroundImage: `url(${imageList.waves})`, display: gameState === 'login' ? 'none' : 'block'}}>
         <GameOver gameState={gameState} hasArrived={currentPlayerPosition === numberOfSquares}/>
 
-        <div style={{display: gameState === 'newGame' ? 'block' : 'none'}}>
-          <NewGameSetup changeNumberOfSquares={changeNumberOfSquares} changePieceType={changePieceType} makeSquares={makeSquares}/>
+        <div data-testid="new-game-view" style={{display: gameState === 'newGame' ? 'block' : 'none'}}>
+          <NewGameSetup changeNumberOfSquares={changeNumberOfSquares} changePieceType={changePieceType} makeSquares={makeSquares} pieceTypeOptions={pieceTypeOptions}/>
         </div>
 
-        <div className="card" style={{display: gameState === 'playingGame' || gameState === 'finishedGame' ? 'block' : 'none'}}>
+        <div data-testid="game-board" className="card" style={{display: gameState === 'playingGame' || gameState === 'finishedGame' ? 'block' : 'none'}}>
           <Board numberOfSquares={numberOfSquares} pieceType={chosenPieceType} playerPosition={currentPlayerPosition} chosenIslandData={chosenIslandData}/>
         </div>
       </div>
@@ -438,10 +439,10 @@ function App() {
           </div>
 
           <div>
-            <button onMouseEnter={() => handleHover('move')} onMouseLeave={() => handleHover('none')} disabled={gameState === 'finishedGame' || canRollDie || showMessage || movingOrResting} onClick={() => movePiece(numberOnDie)}>Move Forward<br></br> (- stamina)</button>
+            <button data-testid="move-button" onMouseEnter={() => handleHover('move')} onMouseLeave={() => handleHover('none')} disabled={gameState === 'finishedGame' || canRollDie || showMessage || movingOrResting} onClick={() => movePiece(numberOnDie)}>Move Forward<br></br> (- stamina)</button>
             <InfoDialog handleHover={handleHover} identifier='move' hover={hover}/>
             <br></br>
-            <button onMouseEnter={() => handleHover('rest')} onMouseLeave={() => handleHover('none')} disabled={gameState === 'finishedGame' || canRollDie || showMessage || movingOrResting} onClick={() => rest()}>Rest and recover<br></br> (+ stamina)</button>
+            <button data-testid="rest-button" onMouseEnter={() => handleHover('rest')} onMouseLeave={() => handleHover('none')} disabled={gameState === 'finishedGame' || canRollDie || showMessage || movingOrResting} onClick={() => rest()}>Rest and recover<br></br> (+ stamina)</button>
             <InfoDialog handleHover={handleHover} identifier='rest' hover={hover}/>
           </div>
           </div>

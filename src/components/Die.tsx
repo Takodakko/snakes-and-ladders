@@ -52,7 +52,6 @@ function Die(props: {dots: number, rollDie: rollDie, canRollDie: boolean}) {
     function rolling() {
       
       if (dieRolling) {
-        console.log('should not roll')
         return;
       }
       setDieFaceClass('die-face rolling-die');
